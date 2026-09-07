@@ -13,3 +13,22 @@ export const CYCLE_STATUSES = ['ongoing', 'completed', 'failed']
 export const GROWTH_STAGES = ['seedling', 'tillering', 'booting', 'heading', 'ripening']
 
 export const HEALTH_STATUSES = ['healthy', 'pest_affected', 'diseased', 'drought_stressed']
+
+// Official barangays of Banaybanay, Davao Oriental.
+// Source: https://banaybanay.gov.ph/barangay-maps-information/
+export const BARANGAYS = [
+  'Rang-ay',
+  'Panikian',
+  'Causwagan',
+  'Mogbongcogon',
+  'Caganganan',
+  'Piso',
+  'Puntalinao',
+  'Pintatagan',
+  'Poblacion',
+  'Mahayag',
+  'San-Vicente',
+  'Maputi',
+  'Cabangcalan',
+  'Calubihan',
+]

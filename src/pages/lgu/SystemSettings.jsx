@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { listSettings, updateSetting } from '../../services/adminService'
@@ -33,8 +34,8 @@ export function SystemSettings() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
-      <h1 className="mb-4 text-2xl font-semibold text-green-800">System Settings</h1>
+    <div className="page-container">
+      <PageHeader title="System settings" description="Manage the settings that support your workspace." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <div className="flex flex-col gap-3">
         {settings.map((setting) => (

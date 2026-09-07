@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import logo from '../../assets/logo.png'
+import { Navbar } from '../../components/layout/Navbar'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { getPublicFieldStats } from '../../services/publicService'
 
 export function PublicMap() {
@@ -23,22 +23,11 @@ export function PublicMap() {
   const totalFields = byBarangay.reduce((sum, r) => sum + r.value, 0)
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="flex items-center justify-between bg-green-800 px-4 py-3 text-white">
-        <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
-          <img src={logo} alt="AgriVista" className="h-8 w-8" />
-          AgriVista
-        </Link>
-        <Link to="/login" className="text-sm underline">
-          Farmer / LGU Log in
-        </Link>
-      </nav>
+    <div className="app-shell">
+      <Navbar />
 
-      <div className="mx-auto max-w-3xl px-4 py-6">
-        <h1 className="mb-2 text-2xl font-semibold text-green-800">Rice Fields in Banaybanay</h1>
-        <p className="mb-6 text-sm text-gray-600">
-          Aggregated public data. Individual farmer records are not shown.
-        </p>
+      <div className="page-container public-page">
+        <PageHeader eyebrow="COMMUNITY INSIGHTS · BANAYBANAY" title="A shared view of our growing community." description="Explore rice farming across our barangays. Public insights show aggregated data while keeping individual farmer records private." />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -55,7 +44,7 @@ export function PublicMap() {
               <XAxis dataKey="name" fontSize={12} />
               <YAxis allowDecimals={false} fontSize={12} />
               <Tooltip />
-              <Bar dataKey="value" fill="#1B5E20" />
+              <Bar dataKey="value" fill="#39745b" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

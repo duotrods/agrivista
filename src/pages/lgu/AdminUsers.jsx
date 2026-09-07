@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { listAllProfiles, toggleProfileActive } from '../../services/adminService'
 
@@ -19,8 +20,8 @@ export function AdminUsers() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
-      <h1 className="mb-4 text-2xl font-semibold text-green-800">User Accounts</h1>
+    <div className="page-container">
+      <PageHeader title="Our community" description="Manage farmer and LGU accounts in one place." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <div className="overflow-x-auto rounded border">
         <table className="w-full text-left text-sm">

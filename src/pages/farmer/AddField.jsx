@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
@@ -37,10 +38,12 @@ export function AddField() {
   }
 
   return (
-    <div className="mx-auto mt-16 max-w-sm px-4">
-      <h1 className="mb-6 text-2xl font-semibold text-green-800">Add Field</h1>
+    <div className="page-container form-page">
+      <PageHeader title="Add a new field" description="Give your field a name and mark its location to get started." />
+      <p className="location-help">Stand near your field when capturing its GPS location. You can draw its boundary after saving.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
+        <label className="form-label" htmlFor="field-name">Field name</label>
+        <input id="field-name"
           className="rounded border px-3 py-2"
           placeholder="Field name (e.g. Palayan sa Taas)"
           value={fieldName}

@@ -1,3 +1,4 @@
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { listActivityLogs } from '../../services/adminService'
 
@@ -10,8 +11,8 @@ export function ActivityLogs() {
   }, [])
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-6">
-      <h1 className="mb-4 text-2xl font-semibold text-green-800">Activity Log</h1>
+    <div className="page-container">
+      <PageHeader title="Activity log" description="Follow the latest updates across your agricultural community." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <ul className="flex flex-col gap-2">
         {logs.length === 0 && <li className="text-sm text-gray-500">No activity yet.</li>}

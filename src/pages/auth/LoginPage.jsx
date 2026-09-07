@@ -1,3 +1,4 @@
+import { AuthShell } from '../../components/layout/AuthShell'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signIn } from '../../services/authService'
@@ -24,25 +25,24 @@ export function LoginPage() {
   }
 
   return (
-    <div className="mx-auto mt-16 max-w-sm px-4">
-      <h1 className="mb-6 text-2xl font-semibold text-green-800">Log in</h1>
+    <AuthShell title="Welcome back" description="Your fields, your progress, all in one place.">
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
+        <label className="auth-label">Email address<input
           type="email"
           className="rounded border px-3 py-2"
-          placeholder="Email"
+          placeholder="Email" aria-label="Email address" autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-        />
-        <input
+        /></label>
+        <label className="auth-label">Password<input
           type="password"
           className="rounded border px-3 py-2"
-          placeholder="Password"
+          placeholder="Password" aria-label="Password" autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-        />
+        /></label>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
@@ -63,6 +63,6 @@ export function LoginPage() {
           View public field data
         </Link>
       </p>
-    </div>
+    </AuthShell>
   )
 }

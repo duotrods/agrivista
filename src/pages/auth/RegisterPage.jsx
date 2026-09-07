@@ -1,5 +1,8 @@
+import { Select } from '../../components/common/Select'
+import { AuthShell } from '../../components/layout/AuthShell'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { BARANGAYS } from '../../lib/constants'
 import { signUp } from '../../services/authService'
 
 export function RegisterPage() {
@@ -27,8 +30,7 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto mt-16 max-w-sm px-4">
-      <h1 className="mb-6 text-2xl font-semibold text-green-800">Register</h1>
+    <AuthShell title="Let’s grow together" description="Create your account to connect with your farming community.">
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex gap-4 text-sm">
           <label className="flex items-center gap-1">
@@ -58,36 +60,46 @@ export function RegisterPage() {
             log in.
           </p>
         )}
-        <input
+        <label className="auth-label">Full name<input
           className="rounded border px-3 py-2"
-          placeholder="Full name"
+          placeholder="Full name" aria-label="Full name" autoComplete="name"
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           required
-        />
-        <input
-          className="rounded border px-3 py-2"
-          placeholder="Barangay"
+        /></label>
+        <label className="auth-label">Barangay<Select
+          aria-label="Barangay"
           value={barangay}
           onChange={(e) => setBarangay(e.target.value)}
-        />
-        <input
+          required
+          className="rounded border px-3 py-2"
+        >
+          <option value="" disabled>
+            Select barangay...
+          </option>
+          {BARANGAYS.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </Select></label>
+        <label className="auth-label">Email address<input
           type="email"
           className="rounded border px-3 py-2"
-          placeholder="Email"
+          placeholder="Email" aria-label="Email address" autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-        />
-        <input
+        /></label>
+        <label className="auth-label">Password<input
           type="password"
           className="rounded border px-3 py-2"
-          placeholder="Password"
+          placeholder="Password" aria-label="Password" autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           minLength={6}
           required
-        />
+        /></label>
         {error && <p className="text-sm text-red-600">{error}</p>}
         <button
           type="submit"
@@ -103,6 +115,6 @@ export function RegisterPage() {
           Log in
         </Link>
       </p>
-    </div>
+    </AuthShell>
   )
 }

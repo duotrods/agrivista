@@ -1,3 +1,4 @@
+import { Select } from '../common/Select'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { GROWTH_STAGES, HEALTH_STATUSES } from '../../lib/constants'
@@ -129,8 +130,8 @@ export function CropCycleCard({ cycle, onUpdated }) {
         <p className="mb-2 text-sm font-medium">Observations</p>
         <form onSubmit={handleLogObservation} className="flex flex-col gap-2">
           <div className="flex flex-wrap gap-2">
-            <select
-              value={growthStage}
+            <Select
+              aria-label="Growth stage" value={growthStage}
               onChange={(e) => setGrowthStage(e.target.value)}
               className="rounded border px-2 py-1 text-sm"
             >
@@ -139,9 +140,9 @@ export function CropCycleCard({ cycle, onUpdated }) {
                   {s}
                 </option>
               ))}
-            </select>
-            <select
-              value={healthStatus}
+            </Select>
+            <Select
+              aria-label="Health status" value={healthStatus}
               onChange={(e) => setHealthStatus(e.target.value)}
               className="rounded border px-2 py-1 text-sm"
             >
@@ -150,7 +151,7 @@ export function CropCycleCard({ cycle, onUpdated }) {
                   {s}
                 </option>
               ))}
-            </select>
+            </Select>
             {healthStatus === 'pest_affected' && (
               <input
                 type="text"

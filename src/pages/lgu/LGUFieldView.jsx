@@ -51,7 +51,7 @@ export function LGUFieldView() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="page-container detail-page">
       <Link to="/" className="text-sm text-green-700 hover:underline">
         &larr; Back to All Fields
       </Link>

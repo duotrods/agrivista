@@ -1,3 +1,4 @@
+import { Select } from '../common/Select'
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { uploadFieldMedia } from '../../services/mediaService'
@@ -43,8 +44,8 @@ export function MediaUpload({ fieldId, onUploaded }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex flex-wrap gap-2">
-        <select
-          value={mediaType}
+        <Select
+          aria-label="Media type" value={mediaType}
           onChange={(e) => setMediaType(e.target.value)}
           className="rounded border px-2 py-2 text-sm"
         >
@@ -53,7 +54,7 @@ export function MediaUpload({ fieldId, onUploaded }) {
               {t.label}
             </option>
           ))}
-        </select>
+        </Select>
         <input
           type="text"
           placeholder="Caption (optional)"

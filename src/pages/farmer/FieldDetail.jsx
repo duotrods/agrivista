@@ -1,3 +1,4 @@
+import { Select } from '../../components/common/Select'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CropCyclesSection } from '../../components/crops/CropCyclesSection'
@@ -112,7 +113,7 @@ export function FieldDetail() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-6">
+    <div className="page-container detail-page">
       <Link to="/" className="text-sm text-green-700 hover:underline">
         &larr; Back to My Fields
       </Link>
@@ -134,8 +135,8 @@ export function FieldDetail() {
           Current: <span className="font-semibold">{field.field_status}</span>
         </p>
         <form onSubmit={handleStatusChange} className="flex flex-col gap-2">
-          <select
-            value={newStatus}
+          <Select
+            aria-label="Field status" value={newStatus}
             onChange={(e) => setNewStatus(e.target.value)}
             className="rounded border px-3 py-2 text-sm"
           >
@@ -144,7 +145,7 @@ export function FieldDetail() {
                 {s}
               </option>
             ))}
-          </select>
+          </Select>
           <textarea
             placeholder="Remarks (optional)"
             value={statusRemarks}
@@ -177,8 +178,8 @@ export function FieldDetail() {
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Field Details</h2>
         <form onSubmit={handleSaveDetails} className="flex flex-col gap-2">
-          <select
-            value={details.crop_variety}
+          <Select
+            aria-label="Crop variety" value={details.crop_variety}
             onChange={(e) => setDetails((d) => ({ ...d, crop_variety: e.target.value }))}
             className="rounded border px-3 py-2 text-sm"
           >
@@ -188,9 +189,9 @@ export function FieldDetail() {
                 {v}
               </option>
             ))}
-          </select>
-          <select
-            value={details.soil_type}
+          </Select>
+          <Select
+            aria-label="Soil type" value={details.soil_type}
             onChange={(e) => setDetails((d) => ({ ...d, soil_type: e.target.value }))}
             className="rounded border px-3 py-2 text-sm"
           >
@@ -200,9 +201,9 @@ export function FieldDetail() {
                 {v}
               </option>
             ))}
-          </select>
-          <select
-            value={details.irrigation_type}
+          </Select>
+          <Select
+            aria-label="Irrigation type" value={details.irrigation_type}
             onChange={(e) => setDetails((d) => ({ ...d, irrigation_type: e.target.value }))}
             className="rounded border px-3 py-2 text-sm"
           >
@@ -212,7 +213,7 @@ export function FieldDetail() {
                 {v}
               </option>
             ))}
-          </select>
+          </Select>
           <label className="text-sm text-gray-600">
             Planting date
             <input

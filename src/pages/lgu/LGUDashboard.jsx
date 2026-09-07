@@ -1,8 +1,10 @@
+import { Select } from '../../components/common/Select'
+import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StatsPanel } from '../../components/dashboard/StatsPanel'
 import { MapView } from '../../components/maps/MapView'
-import { FIELD_STATUSES } from '../../lib/constants'
+import { BARANGAYS, FIELD_STATUSES } from '../../lib/constants'
 import { listAllFields } from '../../services/fieldService'
 
 export function LGUDashboard() {
@@ -22,18 +24,16 @@ export function LGUDashboard() {
 
   const filteredFields = useMemo(() => {
     return fields.filter((f) => {
-      if (barangayFilter && !f.barangay?.toLowerCase().includes(barangayFilter.toLowerCase())) {
-        return false
-      }
+      if (barangayFilter && f.barangay !== barangayFilter) return false
       if (statusFilter && f.field_status !== statusFilter) return false
       return true
     })
   }, [fields, barangayFilter, statusFilter])
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-6">
-      <div className="mb-4 flex items-center justify-between print:hidden">
-        <h1 className="text-2xl font-semibold text-green-800">All Rice Fields</h1>
+    <div className="page-container">
+      <div className="dashboard-heading mb-4 flex items-center justify-between print:hidden">
+        <PageHeader title="Agricultural overview" description="A connected view of rice fields across Banaybanay." />
         <div className="flex gap-2">
           <Link to="/lgu/users" className="rounded border px-3 py-2 text-sm hover:bg-gray-50">
             Users
@@ -63,15 +63,20 @@ export function LGUDashboard() {
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2 print:hidden">
-        <input
-          type="text"
-          placeholder="Filter by barangay..."
-          value={barangayFilter}
+        <Select
+          aria-label="Filter by barangay" value={barangayFilter}
           onChange={(e) => setBarangayFilter(e.target.value)}
           className="rounded border px-3 py-2 text-sm"
-        />
-        <select
-          value={statusFilter}
+        >
+          <option value="">All barangays</option>
+          {BARANGAYS.map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
+        </Select>
+        <Select
+          aria-label="Filter by status" value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="rounded border px-3 py-2 text-sm"
         >
@@ -81,7 +86,7 @@ export function LGUDashboard() {
               {s}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}

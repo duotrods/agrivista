@@ -1,3 +1,4 @@
+import { Select } from '../common/Select'
 import { useEffect, useState } from 'react'
 import { CROP_VARIETIES, SEASONS } from '../../lib/constants'
 import { createCycle, listCyclesForField } from '../../services/cropService'
@@ -35,21 +36,21 @@ export function CropCyclesSection({ fieldId }) {
   return (
     <div>
       <form onSubmit={handleCreate} className="flex flex-wrap items-end gap-2 rounded border p-3">
-        <select value={season} onChange={(e) => setSeason(e.target.value)} className="rounded border px-2 py-1.5 text-sm">
+        <Select aria-label="Season" value={season} onChange={(e) => setSeason(e.target.value)} className="rounded border px-2 py-1.5 text-sm">
           {SEASONS.map((s) => (
             <option key={s} value={s}>
               {s} season
             </option>
           ))}
-        </select>
+        </Select>
         <input
           type="number"
           value={year}
           onChange={(e) => setYear(Number(e.target.value))}
           className="w-20 rounded border px-2 py-1.5 text-sm"
         />
-        <select
-          value={cropVariety}
+        <Select
+          aria-label="Crop variety" value={cropVariety}
           onChange={(e) => setCropVariety(e.target.value)}
           className="rounded border px-2 py-1.5 text-sm"
         >
@@ -59,7 +60,7 @@ export function CropCyclesSection({ fieldId }) {
               {v}
             </option>
           ))}
-        </select>
+        </Select>
         <label className="text-xs text-gray-600">
           Planting date
           <input
