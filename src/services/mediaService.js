@@ -1,7 +1,7 @@
 import { supabase } from '../lib/supabase'
 import { logActivity } from './adminService'
 
-export async function uploadFieldMedia({ fieldId, file, mediaType, caption, uploadedBy }) {
+export async function uploadFieldMedia({ fieldId, file, mediaType, caption, uploadedBy, fieldCondition }) {
   const ext = file.name.split('.').pop()
   const path = `${fieldId}/${crypto.randomUUID()}.${ext}`
 
@@ -18,6 +18,7 @@ export async function uploadFieldMedia({ fieldId, file, mediaType, caption, uplo
       media_type: mediaType,
       caption: caption || null,
       uploaded_by: uploadedBy,
+      field_condition: fieldCondition || null,
     })
     .select()
     .single()

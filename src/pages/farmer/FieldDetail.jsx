@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CropCyclesSection } from '../../components/crops/CropCyclesSection'
 import { FieldNotes } from '../../components/fields/FieldNotes'
+import { FieldReports } from '../../components/fields/FieldReports'
 import { BoundaryDrawer } from '../../components/maps/BoundaryDrawer'
 import { MapView } from '../../components/maps/MapView'
 import { MediaGallery } from '../../components/media/MediaGallery'
@@ -285,6 +286,12 @@ export function FieldDetail() {
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Notes</h2>
         <FieldNotes fieldId={fieldId} />
+      </section>
+
+      {/* Monitoring Reports */}
+      <section className="mt-6 rounded border p-4">
+        <h2 className="mb-2 text-lg font-medium">Monitoring Reports</h2>
+        <FieldReports fieldId={fieldId} />
       </section>
 
       <button

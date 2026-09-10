@@ -1,5 +1,8 @@
 import { useState } from 'react'
+import { FIELD_CONDITIONS } from '../../lib/constants'
 import { PanoViewer } from './PanoViewer'
+
+const CONDITION_LABELS = Object.fromEntries(FIELD_CONDITIONS.map((c) => [c.value, c.label]))
 
 export function MediaGallery({ media }) {
   const [activePanoUrl, setActivePanoUrl] = useState(null)
@@ -34,7 +37,23 @@ export function MediaGallery({ media }) {
                 <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white">
                   360°
                 </span>
+                {item.field_condition && (
+                  <span className="absolute left-1 top-1 rounded bg-green-800/90 px-1.5 py-0.5 text-xs text-white">
+                    {CONDITION_LABELS[item.field_condition] ?? item.field_condition}
+                  </span>
+                )}
               </button>
+            ) : item.media_type === 'drone_photo' ? (
+              <div className="relative h-32 w-full overflow-hidden rounded">
+                <img
+                  src={item.file_url}
+                  alt={item.caption ?? 'Aerial view'}
+                  className="h-full w-full object-cover"
+                />
+                <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white">
+                  🛸 Drone
+                </span>
+              </div>
             ) : (
               <img
                 src={item.file_url}

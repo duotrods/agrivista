@@ -8,7 +8,9 @@ import { AddField } from './pages/farmer/AddField'
 import { FieldDetail } from './pages/farmer/FieldDetail'
 import { ActivityLogs } from './pages/lgu/ActivityLogs'
 import { AdminUsers } from './pages/lgu/AdminUsers'
+import { Announcements } from './pages/lgu/Announcements'
 import { LGUFieldView } from './pages/lgu/LGUFieldView'
+import { Reports } from './pages/lgu/Reports'
 import { SystemSettings } from './pages/lgu/SystemSettings'
 import { PublicMap } from './pages/public/PublicMap'
 
@@ -73,6 +75,22 @@ function App() {
           element={
             <ProtectedRoute>
               <SystemSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lgu/reports"
+          element={
+            <ProtectedRoute>
+              <Reports />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lgu/announcements"
+          element={
+            <ProtectedRoute>
+              <Announcements />
             </ProtectedRoute>
           }
         />

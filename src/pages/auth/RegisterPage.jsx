@@ -2,13 +2,13 @@ import { Select } from '../../components/common/Select'
 import { AuthShell } from '../../components/layout/AuthShell'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BARANGAYS } from '../../lib/constants'
+import { PUROKS } from '../../lib/constants'
 import { signUp } from '../../services/authService'
 
 export function RegisterPage() {
   const [role, setRole] = useState('farmer')
   const [fullName, setFullName] = useState('')
-  const [barangay, setBarangay] = useState('')
+  const [purok, setPurok] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
@@ -20,7 +20,7 @@ export function RegisterPage() {
     setError(null)
     setSubmitting(true)
     try {
-      await signUp({ email, password, fullName, barangay, role })
+      await signUp({ email, password, fullName, purok, role })
       navigate('/')
     } catch (err) {
       setError(err.message)
@@ -67,19 +67,25 @@ export function RegisterPage() {
           onChange={(e) => setFullName(e.target.value)}
           required
         /></label>
-        <label className="auth-label">Barangay<Select
-          aria-label="Barangay"
-          value={barangay}
-          onChange={(e) => setBarangay(e.target.value)}
+        <label className="auth-label">Barangay<input
+          className="rounded border bg-gray-50 px-3 py-2 text-gray-500"
+          value="Caganganan"
+          disabled
+          readOnly
+        /></label>
+        <label className="auth-label">Purok<Select
+          aria-label="Purok"
+          value={purok}
+          onChange={(e) => setPurok(e.target.value)}
           required
           className="rounded border px-3 py-2"
         >
           <option value="" disabled>
-            Select barangay...
+            Select purok...
           </option>
-          {BARANGAYS.map((b) => (
-            <option key={b} value={b}>
-              {b}
+          {PUROKS.map((p) => (
+            <option key={p} value={p}>
+              {p}
             </option>
           ))}
         </Select></label>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FieldNotes } from '../../components/fields/FieldNotes'
+import { FieldReportsLGU } from '../../components/fields/FieldReportsLGU'
 import { MapView } from '../../components/maps/MapView'
 import { MediaGallery } from '../../components/media/MediaGallery'
 import { MediaUpload } from '../../components/media/MediaUpload'
@@ -62,7 +63,7 @@ export function LGUFieldView() {
         <div>
           <h1 className="text-2xl font-semibold text-green-800">{field.field_name}</h1>
           <p className="text-sm text-gray-600">
-            {field.barangay ?? '—'} · Status: {field.field_status}
+            {field.purok ?? '—'} · Status: {field.field_status}
             {field.area_hectares && ` · ${field.area_hectares} ha`}
           </p>
         </div>
@@ -107,6 +108,11 @@ export function LGUFieldView() {
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Notes</h2>
         <FieldNotes fieldId={fieldId} />
+      </section>
+
+      <section className="mt-6 rounded border p-4">
+        <h2 className="mb-2 text-lg font-medium">Monitoring Reports</h2>
+        <FieldReportsLGU fieldId={fieldId} />
       </section>
     </div>
   )

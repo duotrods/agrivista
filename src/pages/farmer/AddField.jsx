@@ -27,7 +27,7 @@ export function AddField() {
         fieldName,
         latitude: position.latitude,
         longitude: position.longitude,
-        barangay: profile?.barangay ?? null,
+        purok: profile?.purok ?? null,
       })
       navigate('/')
     } catch (err) {

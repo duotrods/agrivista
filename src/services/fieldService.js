@@ -21,10 +21,10 @@ export async function getField(fieldId) {
   return data
 }
 
-export async function createField({ farmerId, fieldName, latitude, longitude, barangay }) {
+export async function createField({ farmerId, fieldName, latitude, longitude, purok }) {
   const { data, error } = await supabase
     .from('rice_fields')
-    .insert({ farmer_id: farmerId, field_name: fieldName, latitude, longitude, barangay })
+    .insert({ farmer_id: farmerId, field_name: fieldName, latitude, longitude, purok })
     .select()
     .single()
   if (error) throw error
@@ -96,7 +96,7 @@ export async function listStatusLogs(fieldId) {
 export async function listAllFields() {
   const { data, error } = await supabase
     .from('rice_fields')
-    .select('*, farmer:profiles!farmer_id(full_name, barangay)')
+    .select('*, farmer:profiles!farmer_id(full_name, purok)')
     .order('created_at', { ascending: false })
   if (error) throw error
   return data

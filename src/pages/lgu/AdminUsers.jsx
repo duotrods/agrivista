@@ -30,7 +30,7 @@ export function AdminUsers() {
               <th className="p-2">Name</th>
               <th className="p-2">Email</th>
               <th className="p-2">Role</th>
-              <th className="p-2">Barangay</th>
+              <th className="p-2">Purok</th>
               <th className="p-2">Status</th>
               <th className="p-2"></th>
             </tr>
@@ -41,7 +41,7 @@ export function AdminUsers() {
                 <td className="p-2">{p.full_name}</td>
                 <td className="p-2">{p.email}</td>
                 <td className="p-2">{p.role}</td>
-                <td className="p-2">{p.barangay ?? '—'}</td>
+                <td className="p-2">{p.purok ?? '—'}</td>
                 <td className="p-2">
                   {p.is_active ? (
                     <span className="text-green-700">Active</span>

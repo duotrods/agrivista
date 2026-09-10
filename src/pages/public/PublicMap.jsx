@@ -12,22 +12,22 @@ export function PublicMap() {
     getPublicFieldStats().then(setRows).catch((err) => setError(err.message))
   }, [])
 
-  const byBarangay = useMemo(() => {
+  const byPurok = useMemo(() => {
     const totals = {}
     for (const row of rows) {
-      totals[row.barangay] = (totals[row.barangay] ?? 0) + Number(row.field_count)
+      totals[row.purok] = (totals[row.purok] ?? 0) + Number(row.field_count)
     }
     return Object.entries(totals).map(([name, value]) => ({ name, value }))
   }, [rows])
 
-  const totalFields = byBarangay.reduce((sum, r) => sum + r.value, 0)
+  const totalFields = byPurok.reduce((sum, r) => sum + r.value, 0)
 
   return (
     <div className="app-shell">
       <Navbar />
 
       <div className="page-container public-page">
-        <PageHeader eyebrow="COMMUNITY INSIGHTS · BANAYBANAY" title="A shared view of our growing community." description="Explore rice farming across our barangays. Public insights show aggregated data while keeping individual farmer records private." />
+        <PageHeader eyebrow="COMMUNITY INSIGHTS · CAGANGANAN" title="A shared view of our growing community." description="Explore rice farming across the puroks of Barangay Caganganan. Public insights show aggregated data while keeping individual farmer records private." />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -37,9 +37,9 @@ export function PublicMap() {
         </div>
 
         <div className="rounded border bg-white p-4">
-          <p className="mb-2 text-sm font-medium">Fields by barangay</p>
+          <p className="mb-2 text-sm font-medium">Fields by purok</p>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={byBarangay}>
+            <BarChart data={byPurok}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" fontSize={12} />
               <YAxis allowDecimals={false} fontSize={12} />

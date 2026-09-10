@@ -1,11 +1,13 @@
 import { Select } from '../common/Select'
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+import { FIELD_CONDITIONS } from '../../lib/constants'
 import { uploadFieldMedia } from '../../services/mediaService'
 
 const MEDIA_TYPES = [
   { value: 'photo', label: 'Photo', accept: 'image/*' },
   { value: 'panorama_360', label: '360° Panorama', accept: 'image/*' },
+  { value: 'drone_photo', label: 'Aerial/Drone Photo', accept: 'image/*' },
   { value: 'video', label: 'Video', accept: 'video/*' },
 ]
 
@@ -13,6 +15,7 @@ export function MediaUpload({ fieldId, onUploaded }) {
   const { user } = useAuth()
   const [mediaType, setMediaType] = useState('photo')
   const [caption, setCaption] = useState('')
+  const [fieldCondition, setFieldCondition] = useState('')
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -30,9 +33,11 @@ export function MediaUpload({ fieldId, onUploaded }) {
         mediaType,
         caption,
         uploadedBy: user.id,
+        fieldCondition: mediaType === 'panorama_360' ? fieldCondition : null,
       })
       onUploaded?.(media)
       setCaption('')
+      setFieldCondition('')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -55,6 +60,21 @@ export function MediaUpload({ fieldId, onUploaded }) {
             </option>
           ))}
         </Select>
+        {mediaType === 'panorama_360' && (
+          <Select
+            aria-label="Field condition shown in this panorama"
+            value={fieldCondition}
+            onChange={(e) => setFieldCondition(e.target.value)}
+            className="rounded border px-2 py-2 text-sm"
+          >
+            <option value="">Condition shown (optional)...</option>
+            {FIELD_CONDITIONS.map((c) => (
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
+        )}
         <input
           type="text"
           placeholder="Caption (optional)"

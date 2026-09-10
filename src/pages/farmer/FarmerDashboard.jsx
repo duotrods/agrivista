@@ -1,6 +1,7 @@
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ARFieldView } from '../../components/ar/ARFieldView'
 import { MapView } from '../../components/maps/MapView'
 import { useAuth } from '../../hooks/useAuth'
 import { listFieldsForFarmer } from '../../services/fieldService'
@@ -10,6 +11,7 @@ export function FarmerDashboard() {
   const [fields, setFields] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showAR, setShowAR] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -23,13 +25,24 @@ export function FarmerDashboard() {
     <div className="page-container">
       <div className="dashboard-heading mb-4 flex items-center justify-between">
         <PageHeader title="My fields" description="A little care today. A better harvest tomorrow." />
-        <Link
-          to="/fields/new"
-          className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600"
-        >
-          + Add Field
-        </Link>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAR(true)}
+            className="rounded border border-green-700 px-3 py-2 text-sm text-green-700 hover:bg-green-50"
+          >
+            View in AR
+          </button>
+          <Link
+            to="/fields/new"
+            className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600"
+          >
+            + Add Field
+          </Link>
+        </div>
       </div>
+
+      {showAR && <ARFieldView fields={fields} linkBase="/fields" onClose={() => setShowAR(false)} />}
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
@@ -52,7 +65,7 @@ export function FarmerDashboard() {
             <Link to={`/fields/${field.id}`} className="text-green-700 hover:underline">
               {field.field_name}
             </Link>
-            <p className="mt-1 text-xs text-gray-500">{field.barangay ?? 'Barangay not set'} · {(field.field_status ?? 'Not set').replace(/_/g, ' ')}</p>
+            <p className="mt-1 text-xs text-gray-500">{field.purok ?? 'Purok not set'} · {(field.field_status ?? 'Not set').replace(/_/g, ' ')}</p>
           </li>
         ))}
       </ul>

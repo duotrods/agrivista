@@ -2,17 +2,19 @@ import { Select } from '../../components/common/Select'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ARFieldView } from '../../components/ar/ARFieldView'
 import { StatsPanel } from '../../components/dashboard/StatsPanel'
 import { MapView } from '../../components/maps/MapView'
-import { BARANGAYS, FIELD_STATUSES } from '../../lib/constants'
+import { FIELD_STATUSES, PUROKS } from '../../lib/constants'
 import { listAllFields } from '../../services/fieldService'
 
 export function LGUDashboard() {
   const [fields, setFields] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [showAR, setShowAR] = useState(false)
 
-  const [barangayFilter, setBarangayFilter] = useState('')
+  const [purokFilter, setPurokFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 
   useEffect(() => {
@@ -24,17 +26,30 @@ export function LGUDashboard() {
 
   const filteredFields = useMemo(() => {
     return fields.filter((f) => {
-      if (barangayFilter && f.barangay !== barangayFilter) return false
+      if (purokFilter && f.purok !== purokFilter) return false
       if (statusFilter && f.field_status !== statusFilter) return false
       return true
     })
-  }, [fields, barangayFilter, statusFilter])
+  }, [fields, purokFilter, statusFilter])
 
   return (
     <div className="page-container">
       <div className="dashboard-heading mb-4 flex items-center justify-between print:hidden">
-        <PageHeader title="Agricultural overview" description="A connected view of rice fields across Banaybanay." />
-        <div className="flex gap-2">
+        <PageHeader title="Agricultural overview" description="A connected view of rice fields across Barangay Caganganan." />
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setShowAR(true)}
+            className="rounded border border-green-700 px-3 py-2 text-sm text-green-700 hover:bg-green-50"
+          >
+            View in AR
+          </button>
+          <Link to="/lgu/reports" className="rounded border px-3 py-2 text-sm hover:bg-gray-50">
+            Reports
+          </Link>
+          <Link to="/lgu/announcements" className="rounded border px-3 py-2 text-sm hover:bg-gray-50">
+            Announcements
+          </Link>
           <Link to="/lgu/users" className="rounded border px-3 py-2 text-sm hover:bg-gray-50">
             Users
           </Link>
@@ -58,20 +73,24 @@ export function LGUDashboard() {
         AgriVista — Rice Field Report
       </h1>
 
+      {showAR && (
+        <ARFieldView fields={filteredFields} linkBase="/lgu/fields" onClose={() => setShowAR(false)} />
+      )}
+
       <div className="mb-6">
         <StatsPanel fields={filteredFields} />
       </div>
 
       <div className="mb-4 flex flex-wrap gap-2 print:hidden">
         <Select
-          aria-label="Filter by barangay" value={barangayFilter}
-          onChange={(e) => setBarangayFilter(e.target.value)}
+          aria-label="Filter by purok" value={purokFilter}
+          onChange={(e) => setPurokFilter(e.target.value)}
           className="rounded border px-3 py-2 text-sm"
         >
-          <option value="">All barangays</option>
-          {BARANGAYS.map((b) => (
-            <option key={b} value={b}>
-              {b}
+          <option value="">All puroks</option>
+          {PUROKS.map((p) => (
+            <option key={p} value={p}>
+              {p}
             </option>
           ))}
         </Select>
@@ -107,7 +126,7 @@ export function LGUDashboard() {
                 {field.field_name}
               </Link>
               <p className="text-xs text-gray-500">
-                {field.farmer?.full_name ?? 'Unknown farmer'} · {field.barangay ?? '—'} ·{' '}
+                {field.farmer?.full_name ?? 'Unknown farmer'} · {field.purok ?? '—'} ·{' '}
                 {field.field_status}
               </p>
             </div>

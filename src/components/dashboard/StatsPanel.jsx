@@ -29,10 +29,26 @@ function countBy(items, keyFn) {
   return Object.entries(counts).map(([name, value]) => ({ name, value }))
 }
 
+function harvestProjections(fields) {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const counts = {}
+  for (const field of fields) {
+    if (!field.expected_harvest) continue
+    const date = new Date(field.expected_harvest)
+    if (date < today) continue
+    const key = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+    counts[key] = counts[key] ?? { name: key, value: 0, sortKey: date.getFullYear() * 12 + date.getMonth() }
+    counts[key].value += 1
+  }
+  return Object.values(counts).sort((a, b) => a.sortKey - b.sortKey)
+}
+
 export function StatsPanel({ fields }) {
-  const byBarangay = countBy(fields, (f) => f.barangay)
+  const byPurok = countBy(fields, (f) => f.purok)
   const byStatus = countBy(fields, (f) => f.field_status)
   const verifiedCount = fields.filter((f) => f.is_verified).length
+  const upcomingHarvests = harvestProjections(fields)
 
   return (
     <div className="grid gap-4 sm:grid-cols-3">
@@ -52,9 +68,9 @@ export function StatsPanel({ fields }) {
       </div>
 
       <div className="rounded border p-4 sm:col-span-2">
-        <p className="mb-2 text-sm font-medium">Fields by barangay</p>
+        <p className="mb-2 text-sm font-medium">Fields by purok</p>
         <ResponsiveContainer width="100%" height={220}>
-          <BarChart data={byBarangay}>
+          <BarChart data={byPurok}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" fontSize={12} />
             <YAxis allowDecimals={false} fontSize={12} />
@@ -77,6 +93,23 @@ export function StatsPanel({ fields }) {
             <Tooltip />
           </PieChart>
         </ResponsiveContainer>
+      </div>
+
+      <div className="rounded border p-4 sm:col-span-3">
+        <p className="mb-2 text-sm font-medium">Upcoming harvests by month</p>
+        {upcomingHarvests.length === 0 ? (
+          <p className="text-sm text-gray-500">No upcoming harvest dates recorded.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={upcomingHarvests}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" fontSize={12} />
+              <YAxis allowDecimals={false} fontSize={12} />
+              <Tooltip />
+              <Bar dataKey="value" fill="#D97706" />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   )
