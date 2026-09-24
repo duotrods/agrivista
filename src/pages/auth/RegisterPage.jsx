@@ -1,4 +1,5 @@
 import { Select } from '../../components/common/Select'
+import { PasswordInput } from '../../components/common/PasswordInput'
 import { AuthShell } from '../../components/layout/AuthShell'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -11,6 +12,7 @@ export function RegisterPage() {
   const [purok, setPurok] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const navigate = useNavigate()
@@ -18,6 +20,10 @@ export function RegisterPage() {
   async function handleSubmit(e) {
     e.preventDefault()
     setError(null)
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.')
+      return
+    }
     setSubmitting(true)
     try {
       await signUp({ email, password, fullName, purok, role })
@@ -97,12 +103,19 @@ export function RegisterPage() {
           onChange={(e) => setEmail(e.target.value)}
           required
         /></label>
-        <label className="auth-label">Password<input
-          type="password"
+        <label className="auth-label">Password<PasswordInput
           className="rounded border px-3 py-2"
           placeholder="Password" aria-label="Password" autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          minLength={6}
+          required
+        /></label>
+        <label className="auth-label">Confirm Password<PasswordInput
+          className="rounded border px-3 py-2"
+          placeholder="Confirm password" aria-label="Confirm password" autoComplete="new-password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           minLength={6}
           required
         /></label>

@@ -1,4 +1,5 @@
 import { AuthShell } from '../../components/layout/AuthShell'
+import { PasswordInput } from '../../components/common/PasswordInput'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signIn } from '../../services/authService'
@@ -35,8 +36,7 @@ export function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           required
         /></label>
-        <label className="auth-label">Password<input
-          type="password"
+        <label className="auth-label">Password<PasswordInput
           className="rounded border px-3 py-2"
           placeholder="Password" aria-label="Password" autoComplete="current-password"
           value={password}
