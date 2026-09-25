@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { HomeRoute } from './components/common/HomeRoute'
+import { InstallPrompt } from './components/common/InstallPrompt'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { Layout } from './components/layout/Layout'
 import { LoginPage } from './pages/auth/LoginPage'
@@ -16,7 +17,9 @@ import { PublicMap } from './pages/public/PublicMap'
 
 function App() {
   return (
-    <Routes>
+    <>
+      <InstallPrompt />
+      <Routes>
       <Route path="/public" element={<PublicMap />} />
 
       <Route element={<Layout />}>
@@ -96,7 +99,8 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
-    </Routes>
+      </Routes>
+    </>
   )
 }
 
