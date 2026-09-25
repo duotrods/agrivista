@@ -17,11 +17,18 @@ export async function listActivityLogs() {
   return data
 }
 
-export async function listAllProfiles() {
+export async function listFarmerProfiles() {
   const { data, error } = await supabase
     .from('profiles')
     .select('*')
+    .eq('role', 'farmer')
     .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+export async function listLGUAccountsForApproval() {
+  const { data, error } = await supabase.rpc('admin_list_lgu_accounts')
   if (error) throw error
   return data
 }

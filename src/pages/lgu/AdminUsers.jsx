@@ -1,13 +1,13 @@
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
-import { listAllProfiles, toggleProfileActive } from '../../services/adminService'
+import { listFarmerProfiles, toggleProfileActive } from '../../services/adminService'
 
 export function AdminUsers() {
   const [profiles, setProfiles] = useState([])
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    listAllProfiles().then(setProfiles).catch((err) => setError(err.message))
+    listFarmerProfiles().then(setProfiles).catch((err) => setError(err.message))
   }, [])
 
   async function handleToggle(profile) {
@@ -21,7 +21,7 @@ export function AdminUsers() {
 
   return (
     <div className="page-container">
-      <PageHeader title="Our community" description="Manage farmer and LGU accounts in one place." />
+      <PageHeader title="Our community" description="Manage farmer accounts." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <div className="overflow-x-auto rounded border">
         <table className="w-full text-left text-sm">
@@ -29,7 +29,6 @@ export function AdminUsers() {
             <tr>
               <th className="p-2">Name</th>
               <th className="p-2">Email</th>
-              <th className="p-2">Role</th>
               <th className="p-2">Purok</th>
               <th className="p-2">Status</th>
               <th className="p-2"></th>
@@ -40,7 +39,6 @@ export function AdminUsers() {
               <tr key={p.id} className="border-t">
                 <td className="p-2">{p.full_name}</td>
                 <td className="p-2">{p.email}</td>
-                <td className="p-2">{p.role}</td>
                 <td className="p-2">{p.purok ?? '—'}</td>
                 <td className="p-2">
                   {p.is_active ? (
