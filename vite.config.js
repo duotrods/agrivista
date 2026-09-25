@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'AgriVista - Rice Field Monitor',
+        name: 'AgriVista',
         short_name: 'AgriVista',
         theme_color: '#1B5E20',
         background_color: '#FFFFFF',
