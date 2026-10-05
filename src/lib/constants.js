@@ -1,5 +1,18 @@
 export const FIELD_STATUSES = ['fallow', 'land_prep', 'planted', 'growing', 'harvested']
 
+export const FIELD_STATUS_LABELS = {
+  fallow: 'Fallow',
+  land_prep: 'Land preparation',
+  planted: 'Planted',
+  growing: 'Growing',
+  harvested: 'Harvested',
+}
+
+export const SEED_TYPES = [
+  { value: 'inbred', label: 'Inbred' },
+  { value: 'hybrid', label: 'Hybrid' },
+]
+
 export const SOIL_TYPES = ['clay', 'loam', 'sandy']
 
 export const IRRIGATION_TYPES = ['irrigated', 'rainfed', 'both']

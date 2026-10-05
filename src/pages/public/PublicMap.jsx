@@ -7,9 +7,13 @@ import { getPublicFieldStats } from '../../services/publicService'
 export function PublicMap() {
   const [rows, setRows] = useState([])
   const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getPublicFieldStats().then(setRows).catch((err) => setError(err.message))
+    getPublicFieldStats()
+      .then(setRows)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false))
   }, [])
 
   const byPurok = useMemo(() => {
@@ -27,17 +31,19 @@ export function PublicMap() {
       <Navbar />
 
       <div className="page-container public-page">
-        <PageHeader eyebrow="COMMUNITY INSIGHTS · CAGANGANAN" title="A shared view of our growing community." description="Explore rice farming across the puroks of Barangay Caganganan. Public insights show aggregated data while keeping individual farmer records private." />
+        <PageHeader eyebrow="COMMUNITY INSIGHTS · CAGANGANAN" title="A shared view of our growing community." description="Explore rice farming across the puroks of Barangay Caganganan. Only LGU-approved fields contribute to these summaries; individual farmer records stay private." />
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="mb-6 rounded border bg-white p-4 text-center">
-          <p className="text-3xl font-semibold text-green-800">{totalFields}</p>
-          <p className="text-sm text-gray-600">Total registered rice fields</p>
+          <p className="text-3xl font-semibold text-green-800">{loading || error ? '—' : totalFields}</p>
+          <p className="text-sm text-gray-600">LGU-approved rice fields</p>
         </div>
 
         <div className="rounded border bg-white p-4">
-          <p className="mb-2 text-sm font-medium">Fields by purok</p>
+          <p className="mb-2 text-sm font-medium">Approved fields by purok</p>
+          {loading && <p className="text-sm text-gray-500">Loading approved field data...</p>}
+          {!loading && !error && totalFields === 0 && <p className="text-sm text-gray-500">No approved fields yet. Fields will appear in these summaries after LGU review.</p>}
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={byPurok}>
               <CartesianGrid strokeDasharray="3 3" />

@@ -48,7 +48,7 @@ export function FarmerDashboard() {
 
       <div className="farmer-summary" aria-label="Field summary">
         <div><span>Registered fields</span><strong>{loading ? '—' : fields.length}</strong></div>
-        <div><span>Verified fields</span><strong>{loading ? '—' : fields.filter((field) => field.is_verified).length}</strong></div>
+        <div><span>Approved fields</span><strong>{loading ? '—' : fields.filter((field) => field.is_verified).length}</strong></div>
         <div><span>Total area · hectares</span><strong>{loading ? '—' : fields.reduce((sum, field) => sum + Number(field.area_hectares ?? 0), 0).toFixed(1)}</strong></div>
       </div>
       <div className="section-heading"><h2>Your fields at a glance</h2><span>Explore the map</span></div>
@@ -62,9 +62,14 @@ export function FarmerDashboard() {
         )}
         {fields.map((field) => (
           <li key={field.id} className="rounded border px-3 py-2">
-            <Link to={`/fields/${field.id}`} className="text-green-700 hover:underline">
-              {field.field_name}
-            </Link>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Link to={`/fields/${field.id}`} className="text-green-700 hover:underline">
+                {field.field_name}
+              </Link>
+              <span className={`rounded px-2 py-0.5 text-xs ${field.is_verified ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                {field.is_verified ? 'Approved by LGU' : 'Pending LGU approval'}
+              </span>
+            </div>
             <p className="mt-1 text-xs text-gray-500">{field.purok ?? 'Purok not set'} · {(field.field_status ?? 'Not set').replace(/_/g, ' ')}</p>
           </li>
         ))}

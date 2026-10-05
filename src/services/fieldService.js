@@ -21,10 +21,43 @@ export async function getField(fieldId) {
   return data
 }
 
-export async function createField({ farmerId, fieldName, latitude, longitude, purok }) {
+export async function createField({
+  farmerId,
+  fieldName,
+  latitude,
+  longitude,
+  purok,
+  ownerName,
+  maintainerName,
+  areaHectares,
+  plantingDate,
+  expectedHarvest,
+  seedType,
+  cropVariety,
+  soilType,
+  irrigationType,
+  fieldStatus = 'fallow',
+}) {
   const { data, error } = await supabase
     .from('rice_fields')
-    .insert({ farmer_id: farmerId, field_name: fieldName, latitude, longitude, purok })
+    .insert({
+      farmer_id: farmerId,
+      field_name: fieldName,
+      latitude,
+      longitude,
+      purok,
+      owner_name: ownerName?.trim() || null,
+      maintainer_name: maintainerName?.trim() || null,
+      area_hectares: areaHectares === '' || areaHectares == null ? null : Number(areaHectares),
+      planting_date: plantingDate || null,
+      expected_harvest: expectedHarvest || null,
+      seed_type: seedType || null,
+      field_status: fieldStatus,
+      crop_variety: cropVariety || null,
+      soil_type: soilType || null,
+      irrigation_type: irrigationType || null,
+      is_verified: false,
+    })
     .select()
     .single()
   if (error) throw error
@@ -102,14 +135,18 @@ export async function listAllFields() {
   return data
 }
 
-export async function verifyField({ fieldId, verifiedBy }) {
+export async function approveField({ fieldId, approvedBy, reviewedUpdatedAt }) {
   const { data, error } = await supabase
     .from('rice_fields')
-    .update({ is_verified: true, verified_by: verifiedBy, verified_at: new Date().toISOString() })
+    .update({ is_verified: true })
     .eq('id', fieldId)
+    .eq('is_verified', false)
+    .eq('updated_at', reviewedUpdatedAt)
     .select()
-    .single()
+    .maybeSingle()
   if (error) throw error
-  logActivity({ userId: verifiedBy, action: 'verified_field', resourceType: 'field', resourceId: fieldId })
+  if (!data) throw new Error('This field has changed since you opened it. Refresh the details and review them before approving.')
+  if (!data.is_verified) throw new Error('Only active LGU staff can approve a field.')
+  logActivity({ userId: approvedBy, action: 'approved_field', resourceType: 'field', resourceId: fieldId })
   return data
 }

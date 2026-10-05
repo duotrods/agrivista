@@ -2,6 +2,7 @@ import { Select } from '../../components/common/Select'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { CropCyclesSection } from '../../components/crops/CropCyclesSection'
+import { FieldDetailsInputs } from '../../components/fields/FieldDetailsInputs'
 import { FieldNotes } from '../../components/fields/FieldNotes'
 import { FieldReports } from '../../components/fields/FieldReports'
 import { BoundaryDrawer } from '../../components/maps/BoundaryDrawer'
@@ -9,7 +10,7 @@ import { MapView } from '../../components/maps/MapView'
 import { MediaGallery } from '../../components/media/MediaGallery'
 import { MediaUpload } from '../../components/media/MediaUpload'
 import { useAuth } from '../../hooks/useAuth'
-import { CROP_VARIETIES, FIELD_STATUSES, IRRIGATION_TYPES, SOIL_TYPES } from '../../lib/constants'
+import { FIELD_STATUSES, FIELD_STATUS_LABELS } from '../../lib/constants'
 import {
   deleteField,
   getField,
@@ -43,6 +44,10 @@ export function FieldDetail() {
       .then((f) => {
         setField(f)
         setDetails({
+          owner_name: f.owner_name ?? '',
+          maintainer_name: f.maintainer_name ?? '',
+          area_hectares: f.area_hectares ?? '',
+          seed_type: f.seed_type ?? '',
           crop_variety: f.crop_variety ?? '',
           soil_type: f.soil_type ?? '',
           irrigation_type: f.irrigation_type ?? '',
@@ -66,8 +71,12 @@ export function FieldDetail() {
     setError(null)
     try {
       const cleaned = Object.fromEntries(
-        Object.entries(details).map(([k, v]) => [k, v === '' ? null : v]),
+        Object.entries(details).map(([key, value]) => [
+          key,
+          typeof value === 'string' ? value.trim() || null : value,
+        ]),
       )
+      if (cleaned.area_hectares !== null) cleaned.area_hectares = Number(cleaned.area_hectares)
       const updated = await updateFieldDetails(fieldId, cleaned)
       setField(updated)
     } catch (err) {
@@ -125,25 +134,34 @@ export function FieldDetail() {
         <h1 className="text-2xl font-semibold text-green-800">{field.field_name}</h1>
         <p className="text-sm text-gray-600">
           GPS: {field.latitude}, {field.longitude}
-          {field.area_hectares && ` · ${field.area_hectares} ha`}
+          {field.area_hectares != null && ` · ${field.area_hectares} ha`}
+        </p>
+      </div>
+
+      <div role="status" className={`mt-4 rounded border p-4 text-sm ${field.is_verified ? 'border-green-200 bg-green-50 text-green-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
+        <p className="font-semibold">{field.is_verified ? 'Approved by LGU' : 'Pending LGU approval'}</p>
+        <p className="mt-1">
+          {field.is_verified
+            ? 'Your field is included in Community. Changes to field details, crop status, or boundary need LGU approval again.'
+            : 'LGU staff will review your field information before its data appears in Community. You can continue updating your field while it is pending.'}
         </p>
       </div>
 
       {/* Status */}
       <section className="mt-6 rounded border p-4">
-        <h2 className="mb-2 text-lg font-medium">Status</h2>
+        <h2 className="mb-2 text-lg font-medium">Crop Status</h2>
         <p className="mb-3 text-sm">
-          Current: <span className="font-semibold">{field.field_status}</span>
+          Current: <span className="font-semibold">{FIELD_STATUS_LABELS[field.field_status] ?? field.field_status}</span>
         </p>
         <form onSubmit={handleStatusChange} className="flex flex-col gap-2">
           <Select
-            aria-label="Field status" value={newStatus}
+            aria-label="Crop status" value={newStatus}
             onChange={(e) => setNewStatus(e.target.value)}
             className="rounded border px-3 py-2 text-sm"
           >
             {FIELD_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {FIELD_STATUS_LABELS[s]}
               </option>
             ))}
           </Select>
@@ -158,7 +176,7 @@ export function FieldDetail() {
             disabled={changingStatus || newStatus === field.field_status}
             className="w-fit rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
           >
-            {changingStatus ? 'Updating...' : 'Update Status'}
+            {changingStatus ? 'Updating...' : 'Update Crop Status'}
           </button>
         </form>
 
@@ -166,8 +184,8 @@ export function FieldDetail() {
           <ul className="mt-3 flex flex-col gap-1 border-t pt-3 text-xs text-gray-600">
             {statusLogs.map((log) => (
               <li key={log.id}>
-                {new Date(log.created_at).toLocaleDateString()}: {log.old_status ?? '—'} →{' '}
-                {log.new_status}
+                {new Date(log.created_at).toLocaleDateString()}: {FIELD_STATUS_LABELS[log.old_status] ?? log.old_status ?? '—'} →{' '}
+                {FIELD_STATUS_LABELS[log.new_status] ?? log.new_status}
                 {log.remarks && ` (${log.remarks})`}
               </li>
             ))}
@@ -179,60 +197,10 @@ export function FieldDetail() {
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Field Details</h2>
         <form onSubmit={handleSaveDetails} className="flex flex-col gap-2">
-          <Select
-            aria-label="Crop variety" value={details.crop_variety}
-            onChange={(e) => setDetails((d) => ({ ...d, crop_variety: e.target.value }))}
-            className="rounded border px-3 py-2 text-sm"
-          >
-            <option value="">Crop variety...</option>
-            {CROP_VARIETIES.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </Select>
-          <Select
-            aria-label="Soil type" value={details.soil_type}
-            onChange={(e) => setDetails((d) => ({ ...d, soil_type: e.target.value }))}
-            className="rounded border px-3 py-2 text-sm"
-          >
-            <option value="">Soil type...</option>
-            {SOIL_TYPES.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </Select>
-          <Select
-            aria-label="Irrigation type" value={details.irrigation_type}
-            onChange={(e) => setDetails((d) => ({ ...d, irrigation_type: e.target.value }))}
-            className="rounded border px-3 py-2 text-sm"
-          >
-            <option value="">Irrigation type...</option>
-            {IRRIGATION_TYPES.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </Select>
-          <label className="text-sm text-gray-600">
-            Planting date
-            <input
-              type="date"
-              value={details.planting_date}
-              onChange={(e) => setDetails((d) => ({ ...d, planting_date: e.target.value }))}
-              className="mt-1 block rounded border px-3 py-2 text-sm"
-            />
-          </label>
-          <label className="text-sm text-gray-600">
-            Expected harvest
-            <input
-              type="date"
-              value={details.expected_harvest}
-              onChange={(e) => setDetails((d) => ({ ...d, expected_harvest: e.target.value }))}
-              className="mt-1 block rounded border px-3 py-2 text-sm"
-            />
-          </label>
+          <FieldDetailsInputs
+            details={details}
+            onChange={(name, value) => setDetails((current) => ({ ...current, [name]: value }))}
+          />
           <button
             type="submit"
             disabled={savingDetails}
@@ -252,6 +220,7 @@ export function FieldDetail() {
             initialPoints={field.polygon_coords ?? []}
             onSaved={(updated) => {
               setField(updated)
+              setDetails((current) => ({ ...current, area_hectares: updated.area_hectares ?? '' }))
               setEditingBoundary(false)
             }}
           />

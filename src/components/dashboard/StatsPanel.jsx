@@ -58,7 +58,7 @@ export function StatsPanel({ fields }) {
       </div>
       <div className="rounded border p-4 text-center">
         <p className="text-3xl font-semibold text-green-800">{verifiedCount}</p>
-        <p className="text-sm text-gray-600">Verified fields</p>
+        <p className="text-sm text-gray-600">Approved fields</p>
       </div>
       <div className="rounded border p-4 text-center">
         <p className="text-3xl font-semibold text-green-800">

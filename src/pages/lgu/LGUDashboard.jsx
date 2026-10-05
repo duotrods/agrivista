@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { ARFieldView } from '../../components/ar/ARFieldView'
 import { StatsPanel } from '../../components/dashboard/StatsPanel'
 import { MapView } from '../../components/maps/MapView'
-import { FIELD_STATUSES, PUROKS } from '../../lib/constants'
+import { FIELD_STATUSES, FIELD_STATUS_LABELS, PUROKS } from '../../lib/constants'
 import { listAllFields } from '../../services/fieldService'
 
 export function LGUDashboard() {
@@ -16,6 +16,7 @@ export function LGUDashboard() {
 
   const [purokFilter, setPurokFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [approvalFilter, setApprovalFilter] = useState('')
 
   useEffect(() => {
     listAllFields()
@@ -28,9 +29,13 @@ export function LGUDashboard() {
     return fields.filter((f) => {
       if (purokFilter && f.purok !== purokFilter) return false
       if (statusFilter && f.field_status !== statusFilter) return false
+      if (approvalFilter === 'pending' && f.is_verified) return false
+      if (approvalFilter === 'approved' && !f.is_verified) return false
       return true
     })
-  }, [fields, purokFilter, statusFilter])
+  }, [fields, purokFilter, statusFilter, approvalFilter])
+
+  const pendingCount = fields.filter((field) => !field.is_verified).length
 
   return (
     <div className="page-container">
@@ -81,6 +86,15 @@ export function LGUDashboard() {
         <StatsPanel fields={filteredFields} />
       </div>
 
+      {!loading && pendingCount > 0 && (
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 print:hidden">
+          <p>{pendingCount} {pendingCount === 1 ? 'field needs' : 'fields need'} LGU approval before appearing in Community.</p>
+          <button type="button" onClick={() => { setApprovalFilter('pending'); setPurokFilter(''); setStatusFilter('') }} className="rounded border px-3 py-2 font-medium">
+            Review Pending Fields
+          </button>
+        </div>
+      )}
+
       <div className="mb-4 flex flex-wrap gap-2 print:hidden">
         <Select
           aria-label="Filter by purok" value={purokFilter}
@@ -102,9 +116,19 @@ export function LGUDashboard() {
           <option value="">All statuses</option>
           {FIELD_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {FIELD_STATUS_LABELS[s]}
             </option>
           ))}
+        </Select>
+        <Select
+          aria-label="Filter by approval"
+          value={approvalFilter}
+          onChange={(e) => setApprovalFilter(e.target.value)}
+          className="rounded border px-3 py-2 text-sm"
+        >
+          <option value="">All approval statuses</option>
+          <option value="pending">Pending LGU approval</option>
+          <option value="approved">Approved by LGU</option>
         </Select>
       </div>
 
@@ -127,13 +151,13 @@ export function LGUDashboard() {
               </Link>
               <p className="text-xs text-gray-500">
                 {field.farmer?.full_name ?? 'Unknown farmer'} · {field.purok ?? '—'} ·{' '}
-                {field.field_status}
+                {FIELD_STATUS_LABELS[field.field_status] ?? field.field_status}
               </p>
             </div>
             {field.is_verified ? (
-              <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">Verified</span>
+              <span className="rounded bg-green-100 px-2 py-0.5 text-xs text-green-800">Approved by LGU</span>
             ) : (
-              <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">Unverified</span>
+              <span className="rounded bg-amber-100 px-2 py-0.5 text-xs text-amber-800">Pending LGU approval</span>
             )}
           </li>
         ))}
