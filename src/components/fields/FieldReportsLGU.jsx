@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+import { ReportDetails } from './ReportDetails'
 import { listReportsForField, markReportReviewed } from '../../services/reportService'
 
 export function FieldReportsLGU({ fieldId }) {
@@ -29,10 +30,10 @@ export function FieldReportsLGU({ fieldId }) {
         )}
         {reports.map((r) => (
           <li key={r.id} className="rounded bg-gray-50 p-2 text-sm">
-            <p>{r.summary}</p>
+            <ReportDetails report={r} />
             <div className="mt-1 flex items-center justify-between">
               <p className="text-xs text-gray-500">
-                {new Date(r.created_at).toLocaleDateString()} ·{' '}
+                {new Date(r.report_date ?? r.created_at).toLocaleDateString()} ·{' '}
                 <span className={r.status === 'reviewed' ? 'text-green-700' : 'text-amber-700'}>
                   {r.status}
                 </span>
@@ -43,7 +44,7 @@ export function FieldReportsLGU({ fieldId }) {
                   onClick={() => handleReview(r.id)}
                   className="rounded border px-2 py-0.5 text-xs hover:bg-white"
                 >
-                  Mark Reviewed
+                  Validate
                 </button>
               )}
             </div>

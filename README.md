@@ -22,7 +22,7 @@ A Progressive Web App for rice field identification and monitoring in Banaybanay
 - **LGU oversight** — review submitted field information, filter pending approvals, and approve fields for Community. Changes to field details, crop status, or boundaries require approval again. The database prevents self-approval and the review screen rejects outdated records.
 - **Notifications** — in-app bell notifies farmers when their field is approved.
 - **Admin** — enable/disable user accounts, activity log, system settings.
-- **Public view** — `/public` shows aggregated counts of LGU-approved fields by purok, with no login and no individual farmer data exposed. Pending fields are excluded by the database.
+- **Public view** — `/` (Home), `/map`, `/statistics`, `/crop-status` and `/about` need no login. They show only LGU-approved fields, anonymised (no names, owners or ids; coordinates rounded to ~100 m), enforced by the database.
 
 ## Local Setup
 

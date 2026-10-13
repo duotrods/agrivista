@@ -150,3 +150,37 @@ export async function approveField({ fieldId, approvedBy, reviewedUpdatedAt }) {
   logActivity({ userId: approvedBy, action: 'approved_field', resourceType: 'field', resourceId: fieldId })
   return data
 }
+
+export const REVIEW_OUTCOMES = {
+  rejected: { action: 'rejected_field', title: 'Field rejected', type: 'warning' },
+  needs_correction: { action: 'requested_field_correction', title: 'Field needs correction', type: 'warning' },
+}
+
+export async function returnFieldFromReview({ fieldId, reviewedBy, reviewedUpdatedAt, outcome, note }) {
+  if (!REVIEW_OUTCOMES[outcome]) throw new Error('Unknown review outcome.')
+  const trimmed = note?.trim()
+  if (!trimmed) throw new Error('Add a note so the farmer knows why.')
+  const { data, error } = await supabase
+    .from('rice_fields')
+    .update({ review_status: outcome, review_note: trimmed })
+    .eq('id', fieldId)
+    .eq('is_verified', false)
+    .eq('updated_at', reviewedUpdatedAt)
+    .select()
+    .maybeSingle()
+  if (error) throw error
+  if (!data) throw new Error('This field has changed since you opened it. Refresh the details and review them again.')
+  if (data.review_status !== outcome) throw new Error('Only active LGU staff can review a field.')
+  logActivity({ userId: reviewedBy, action: REVIEW_OUTCOMES[outcome].action, resourceType: 'field', resourceId: fieldId, details: { note: trimmed } })
+  return data
+}
+
+export async function listRecentStatusLogs(limit = 30) {
+  const { data, error } = await supabase
+    .from('field_status_logs')
+    .select('*, field:rice_fields(field_name, purok)')
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return data
+}

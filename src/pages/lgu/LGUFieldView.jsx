@@ -8,7 +8,7 @@ import { MediaUpload } from '../../components/media/MediaUpload'
 import { useAuth } from '../../hooks/useAuth'
 import { FIELD_STATUS_LABELS, SEED_TYPES } from '../../lib/constants'
 import { listCyclesForField } from '../../services/cropService'
-import { approveField, getField } from '../../services/fieldService'
+import { REVIEW_OUTCOMES, approveField, getField, returnFieldFromReview } from '../../services/fieldService'
 import { listMediaForField } from '../../services/mediaService'
 import { createNotification } from '../../services/notificationService'
 
@@ -22,6 +22,8 @@ export function LGUFieldView() {
   const [error, setError] = useState(null)
   const [approving, setApproving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [returning, setReturning] = useState(null)
+  const [reviewNote, setReviewNote] = useState('')
 
   useEffect(() => {
     getField(fieldId).then(setField).catch((err) => setError(err.message))
@@ -61,13 +63,36 @@ export function LGUFieldView() {
     }
   }
 
+  async function handleReturn(outcome) {
+    setReturning(outcome)
+    setError(null)
+    try {
+      const updated = await returnFieldFromReview({ fieldId, reviewedBy: user.id, reviewedUpdatedAt: field.updated_at, outcome, note: reviewNote })
+      setField(updated)
+      setReviewNote('')
+      await createNotification({
+        userId: updated.farmer_id,
+        title: REVIEW_OUTCOMES[outcome].title,
+        message: outcome === 'rejected'
+          ? `Your field "${updated.field_name}" was rejected by LGU staff: ${updated.review_note}`
+          : `Your field "${updated.field_name}" needs corrections before approval: ${updated.review_note}`,
+        type: REVIEW_OUTCOMES[outcome].type,
+        link: `/fields/${updated.id}`,
+      }).catch(() => setError('Review saved, but the farmer notification could not be sent.'))
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setReturning(null)
+    }
+  }
+
   if (!field) {
     return <div className="p-8 text-center text-gray-500">{error ?? 'Loading...'}</div>
   }
 
   return (
     <div className="page-container detail-page">
-      <Link to="/" className="text-sm text-green-700 hover:underline">
+      <Link to="/lgu/fields" className="text-sm text-green-700 hover:underline">
         &larr; Back to All Fields
       </Link>
 
@@ -83,6 +108,10 @@ export function LGUFieldView() {
         </div>
         {field.is_verified ? (
           <span className="rounded bg-green-100 px-3 py-1 text-sm text-green-800">Approved by LGU</span>
+        ) : field.review_status === 'rejected' ? (
+          <span className="rounded bg-red-100 px-3 py-1 text-sm text-red-800">Rejected</span>
+        ) : field.review_status === 'needs_correction' ? (
+          <span className="rounded bg-orange-100 px-3 py-1 text-sm text-orange-800">Needs correction</span>
         ) : (
           <span className="rounded bg-amber-100 px-3 py-1 text-sm text-amber-800">Pending LGU approval</span>
         )}
@@ -116,16 +145,48 @@ export function LGUFieldView() {
             ? 'This field is approved and included in Community. Changes to its information require a new review.'
             : 'Review the submitted information before approving. Pending field data is excluded from Community.'}
         </p>
+        {field.review_note && !field.is_verified && (
+          <p className="mt-3 rounded border border-orange-200 bg-orange-50 p-3 text-sm text-orange-800">
+            Your note to the farmer: {field.review_note}
+          </p>
+        )}
+        {!field.is_verified && profile?.role === 'lgu_staff' && profile.is_active && (
+          <textarea
+            aria-label="Note to farmer"
+            placeholder="Note to farmer (required to reject or request correction)"
+            value={reviewNote}
+            onChange={(e) => setReviewNote(e.target.value)}
+            className="mt-3 w-full rounded border p-2 text-sm"
+          />
+        )}
         <div className="mt-3 flex flex-wrap gap-2">
           {!field.is_verified && profile?.role === 'lgu_staff' && profile.is_active && (
-            <button
-              type="button"
-              onClick={handleApprove}
-              disabled={approving || refreshing}
-              className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
-            >
-              {approving ? 'Approving...' : 'Approve for Community'}
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={handleApprove}
+                disabled={approving || refreshing || returning}
+                className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
+              >
+                {approving ? 'Approving...' : 'Approve for Community'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleReturn('needs_correction')}
+                disabled={approving || refreshing || returning || !reviewNote.trim()}
+                className="rounded border border-orange-600 px-3 py-2 text-sm text-orange-700 disabled:opacity-50"
+              >
+                {returning === 'needs_correction' ? 'Sending...' : 'Request Correction'}
+              </button>
+              <button
+                type="button"
+                onClick={() => handleReturn('rejected')}
+                disabled={approving || refreshing || returning || !reviewNote.trim()}
+                className="rounded border border-red-600 px-3 py-2 text-sm text-red-700 disabled:opacity-50"
+              >
+                {returning === 'rejected' ? 'Rejecting...' : 'Reject'}
+              </button>
+            </>
           )}
           <button type="button" onClick={handleRefresh} disabled={refreshing || approving} className="rounded border px-3 py-2 text-sm disabled:opacity-50">
             {refreshing ? 'Refreshing...' : 'Refresh Details'}

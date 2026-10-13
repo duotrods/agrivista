@@ -83,3 +83,9 @@ export function getFieldARCategory(field) {
   }
   return { key: 'unknown', label: 'Unspecified', color: '#9CA3AF' }
 }
+
+/** A planted or growing field whose expected harvest is due within two weeks (or overdue). */
+export function isReadyToHarvest(field) {
+  if (!['planted', 'growing'].includes(field.field_status) || !field.expected_harvest) return false
+  return (new Date(field.expected_harvest) - new Date()) / DAYS_MS <= NEAR_HARVEST_DAYS
+}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { listNotifications, markAsRead } from '../../services/notificationService'
 
@@ -64,6 +64,9 @@ export function NotificationBell() {
               </li>
             ))}
           </ul>
+          <Link to="/notifications" onClick={() => setOpen(false)} className="block border-t px-3 py-2 text-center text-sm text-green-700 hover:bg-gray-50">
+            View all notifications
+          </Link>
         </div>
       )}
     </div>

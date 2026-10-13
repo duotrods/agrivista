@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AgriVista UX Site Map</title>
+<style>
+:root{--ink:#111;--bg:#fff;--line:#111}
+@media (prefers-color-scheme:dark){:root{--ink:#eee;--bg:#161616;--line:#ddd}}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 16px;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.box{border:2px solid var(--line);border-radius:8px;padding:8px 10px;text-align:center;background:var(--bg)}
+.box b{display:block;font-size:14px}.box small{display:block;font-size:11px;line-height:1.35;margin-top:2px}
+.root{width:260px;margin:0 auto 28px;padding:12px}.root b{font-size:26px}.root small{font-size:15px}
+.cols{display:grid;grid-template-columns:repeat(4,minmax(220px,1fr));gap:20px;max-width:1500px;margin:0 auto;overflow-x:auto}
+.head{padding:12px;margin-bottom:14px}.head b{font-size:18px}.head small{font-size:13px}
+.list{border-left:2px solid var(--line);margin-left:12px;padding-left:18px}
+.list .box{position:relative;margin-bottom:12px}
+.list .box::before{content:"";position:absolute;left:-18px;top:50%;width:18px;border-top:2px solid var(--line)}
+.list .box::after{content:"";position:absolute;left:-7px;top:calc(50% - 5px);border:5px solid transparent;border-left:7px solid var(--line);border-right:0}
+.note{max-width:1500px;margin:24px auto 0;font-size:12px;opacity:.8}
+@media print{body{padding:8px}.cols{gap:10px}}
+</style></head><body>
+<div class="box root"><b>AgriVista</b><small>UX Site Map</small></div>
+<div class="cols">
+
+<section><div class="box head"><b>Public / Landing</b><small>(General Viewer)</small></div><div class="list">
+<div class="box"><b>Home</b></div>
+<div class="box"><b>Rice Field Map</b><small>(Search / Filter / Field Details – no private farmer info)</small></div>
+<div class="box"><b>Statistics</b><small>(General Statistics)</small></div>
+<div class="box"><b>Crop Status</b><small>(Unplanted / Planted / Growing / Ready to Harvest)</small></div>
+<div class="box"><b>About AgriVista</b></div>
+<div class="box"><b>Login / Register</b></div>
+</div></section>
+
+<section><div class="box head"><b>Farmer / Rice Field Owner</b><small>(Registered User)</small></div><div class="list">
+<div class="box"><b>Dashboard</b><small>(Total Fields / Pending Verification / Planted / Growing / Ready to Harvest / Upcoming Harvest / Notifications)</small></div>
+<div class="box"><b>My Fields</b><small>(All Fields / Add Field / Edit Field / Field Status)</small></div>
+<div class="box"><b>Field Details</b><small>(Info / Photos &amp; 360° Upload + View / View in AR / Monitoring Info)</small></div>
+<div class="box"><b>Map</b><small>(My Fields / Search / Filter / Field Details)</small></div>
+<div class="box"><b>Monitoring</b><small>(Update Crop Status: Unplanted → Planted → Growing → Ready to Harvest / Add Observations)</small></div>
+<div class="box"><b>Reports</b><small>(Create Report: Field, Date, Status, Condition, Observation, Harvest Info, Optional Photo / Submitted / Validation Status)</small></div>
+<div class="box"><b>Notifications</b><small>(Field Approved / Rejected / Needs Correction / Harvest Reminder / LGU Announcements)</small></div>
+<div class="box"><b>Profile</b><small>(Account Settings / Logout)</small></div>
+</div></section>
+
+<section><div class="box head"><b>LGU Personnel</b><small>(Staff)</small></div><div class="list">
+<div class="box"><b>Dashboard</b><small>(Total Fields / Total Farmers / Pending Verification / Unplanted / Planted / Growing / Ready to Harvest / Recent Monitoring Reports / Harvest Projections)</small></div>
+<div class="box"><b>Rice Fields</b><small>(All / Pending / Verified / Rejected / Needs Correction / Field Details)</small></div>
+<div class="box"><b>Map</b><small>(All Fields / Search / Filter)</small></div>
+<div class="box"><b>Verify Fields</b><small>(Submitted / Review / Approve / Reject / Request Correction → Farmer Notified)</small></div>
+<div class="box"><b>Farmers</b><small>(Farmer List / Details / Registered Rice Fields)</small></div>
+<div class="box"><b>Monitoring Reports</b><small>(Submitted / Review / Validate / History)</small></div>
+<div class="box"><b>Crop Monitoring</b><small>(Crop Status Overview / Field Status Updates)</small></div>
+<div class="box"><b>Agricultural Reports</b><small>(Rice Fields / Crop Status / Field Distribution / Field Conditions / Registered Farmers / Monitoring Reports / Harvest Projections — View / Print / Export)</small></div>
+<div class="box"><b>Notifications</b><small>(New Field Registration / New Monitoring Report / Pending Verification)</small></div>
+<div class="box"><b>Activity Logs</b><small>(Registration / Update / Photo &amp; 360° Upload / Report Submission / Approval-Rejection / Status Changes)</small></div>
+<div class="box"><b>Profile</b><small>(Account Settings / Logout)</small></div>
+</div></section>
+
+<section><div class="box head"><b>Authentication</b></div><div class="list">
+<div class="box"><b>Login</b><small>(Farmer / LGU Staff)</small></div>
+<div class="box"><b>Register</b><small>(Select User Role: Farmer / LGU Staff — LGU Staff accounts require Admin approval)</small></div>
+<div class="box"><b>Forgot Password</b></div>
+<div class="box"><b>Reset Password</b></div>
+</div></section>
+
+</div>
+<p class="note">Field Details is shared: Farmer (own fields), LGU (all fields), Public (general info only, no owner details).</p>
+</body></html>

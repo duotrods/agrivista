@@ -185,9 +185,88 @@ test('LGU approval controls Community visibility', async (t) => {
     assert.equal((await approve()).is_verified, true)
   })
 
+  await t.test('LGU can reject or request correction with a note; farmer edits resubmit', async () => {
+    await asUser(farmer)
+    await db.query("update rice_fields set owner_name = 'Resubmitted' where id = $1", [field.id])
+    await asUser(staff)
+    await assert.rejects(
+      db.query("update rice_fields set review_status = 'rejected' where id = $1", [field.id]),
+      /note is required/,
+    )
+    await db.query("update rice_fields set review_status = 'needs_correction', review_note = 'Fix area' where id = $1", [field.id])
+    let current = await getField()
+    assert.equal(current.is_verified, false)
+    assert.equal(current.review_status, 'needs_correction')
+    assert.equal(current.review_note, 'Fix area')
+
+    // Farmers cannot clear or set the review outcome directly.
+    await asUser(farmer)
+    await db.query("update rice_fields set review_status = 'pending', review_note = null where id = $1", [field.id])
+    current = await getField()
+    assert.equal(current.review_status, 'needs_correction')
+
+    // Editing the field resubmits it for review.
+    await db.query('update rice_fields set area_hectares = 4.2 where id = $1', [field.id])
+    current = await getField()
+    assert.equal(current.review_status, 'pending')
+    assert.equal(current.review_note, null)
+
+    await asUser(staff)
+    await db.query("update rice_fields set review_status = 'rejected', review_note = 'Not a rice field' where id = $1", [field.id])
+    assert.equal((await getField()).review_status, 'rejected')
+    assert.equal(await communityCount(), 0)
+
+    // Approval clears any previous outcome.
+    await asUser(farmer)
+    await db.query('update rice_fields set area_hectares = 4.3 where id = $1', [field.id])
+    assert.equal((await approve()).review_status, 'pending')
+  })
+
+  await t.test('notifications reach LGU staff and farmers for review events', async () => {
+    async function titles(userId) {
+      await db.exec('reset role')
+      return (await db.query('select title from notifications where user_id = $1 order by created_at', [userId])).rows.map((r) => r.title)
+    }
+    assert.ok((await titles(staff)).includes('New field registration'))
+    assert.ok((await titles(staff)).includes('Field pending verification'))
+    assert.ok(!(await titles(inactiveStaff)).includes('New field registration'))
+
+    await asUser(farmer)
+    await db.query("insert into field_reports (field_id, submitted_by, summary) values ($1, $2, 'Looks good')", [field.id, farmer])
+    assert.ok((await titles(staff)).includes('New monitoring report'))
+
+    await asUser(farmer)
+    await db.query("update rice_fields set expected_harvest = current_date + 5 where id = $1", [field.id])
+    assert.equal((await db.query('select create_harvest_reminders() as n')).rows[0].n, 1)
+    assert.equal((await db.query('select create_harvest_reminders() as n')).rows[0].n, 0)
+    assert.deepEqual((await titles(farmer)).filter((t) => t === 'Harvest reminder'), ['Harvest reminder'])
+    await asUser(null, 'anon')
+    await assert.rejects(db.query('select create_harvest_reminders()'), /permission denied/)
+    assert.equal((await approve()).is_verified, true)
+  })
+
+  await t.test('public map data is anonymised and limited to approved fields', async () => {
+    await asUser(null, 'anon')
+    const { rows } = await db.query('select * from get_public_fields()')
+    assert.equal(rows.length, 1)
+    assert.deepEqual(Object.keys(rows[0]).sort(), [
+      'area_hectares', 'crop_variety', 'expected_harvest_month', 'field_status',
+      'irrigation_type', 'latitude', 'longitude', 'purok', 'seed_type',
+    ])
+    assert.equal(Number(rows[0].latitude), 7.12)
+    await asUser(farmer)
+    await db.query("update rice_fields set owner_name = 'Pending again' where id = $1", [field.id])
+    await asUser(null, 'anon')
+    assert.equal((await db.query('select * from get_public_fields()')).rows.length, 0)
+    assert.equal((await approve()).is_verified, true)
+  })
+
   await t.test('approval migration is repeatable and preserves existing approvals', async () => {
     await db.exec('reset role')
     await db.exec(await readFile(new URL('0018_field_approval.sql', migrations), 'utf8'))
+    await db.exec(await readFile(new URL('0019_field_review_outcomes.sql', migrations), 'utf8'))
+    await db.exec(await readFile(new URL('0020_review_notifications.sql', migrations), 'utf8'))
+    await db.exec(await readFile(new URL('0021_public_fields_map.sql', migrations), 'utf8'))
     await asUser(null, 'anon')
     assert.equal(await communityCount(), 1)
   })

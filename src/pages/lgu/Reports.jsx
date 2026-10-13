@@ -1,5 +1,6 @@
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
+import { ReportDetails } from '../../components/fields/ReportDetails'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { listAllReports, markReportReviewed } from '../../services/reportService'
@@ -37,7 +38,7 @@ export function Reports() {
                 </Link>
                 <p className="text-xs text-gray-500">
                   {r.submitter?.full_name ?? 'Unknown farmer'} · {r.field?.purok ?? '—'} ·{' '}
-                  {new Date(r.created_at).toLocaleDateString()}
+                  {new Date(r.report_date ?? r.created_at).toLocaleDateString()}
                 </p>
               </div>
               <span
@@ -48,14 +49,14 @@ export function Reports() {
                 {r.status}
               </span>
             </div>
-            <p className="mt-2 text-sm">{r.summary}</p>
+            <div className="mt-2"><ReportDetails report={r} /></div>
             {r.status !== 'reviewed' && (
               <button
                 type="button"
                 onClick={() => handleReview(r.id)}
                 className="mt-2 rounded border px-3 py-1 text-xs hover:bg-gray-50"
               >
-                Mark Reviewed
+                Validate
               </button>
             )}
           </li>

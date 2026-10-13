@@ -7,9 +7,12 @@ export function FieldMarker({ field, linkBase = '/fields' }) {
       <Popup>
         <div className="text-sm">
           <p className="font-semibold">{field.field_name}</p>
-          <Link to={`${linkBase}/${field.id}`} className="text-green-700 underline">
-            View field
-          </Link>
+          {field.popup_lines?.map((line) => <p key={line} className="text-gray-600">{line}</p>)}
+          {linkBase && (
+            <Link to={`${linkBase}/${field.id}`} className="text-green-700 underline">
+              View field
+            </Link>
+          )}
         </div>
       </Popup>
     </Marker>

@@ -5,3 +5,9 @@ export async function getPublicFieldStats() {
   if (error) throw error
   return data
 }
+
+export async function getPublicFields() {
+  const { data, error } = await supabase.rpc('get_public_fields')
+  if (error) throw error
+  return data
+}

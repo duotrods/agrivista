@@ -4,7 +4,7 @@ import { AuthShell } from '../../components/layout/AuthShell'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { PUROKS } from '../../lib/constants'
-import { signUp } from '../../services/authService'
+import { signOut, signUp } from '../../services/authService'
 
 export function RegisterPage() {
   const [role, setRole] = useState('farmer')
@@ -15,6 +15,7 @@ export function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [pendingApproval, setPendingApproval] = useState(false)
   const navigate = useNavigate()
 
   async function handleSubmit(e) {
@@ -27,6 +28,11 @@ export function RegisterPage() {
     setSubmitting(true)
     try {
       await signUp({ email, password, fullName, purok, role })
+      if (role === 'lgu_staff') {
+        await signOut().catch(() => {})
+        setPendingApproval(true)
+        return
+      }
       navigate('/')
     } catch (err) {
       setError(err.message)
@@ -37,6 +43,14 @@ export function RegisterPage() {
 
   return (
     <AuthShell title="Let’s grow together" description="Create your account to connect with your farming community.">
+      {pendingApproval ? (
+        <div role="status" className="rounded bg-green-50 px-3 py-3 text-sm text-green-800">
+          <p className="font-medium">Registration received.</p>
+          <p className="mt-1">An AgriVista Admin will review your LGU Staff account. You can log in once it is approved.</p>
+          <Link to="/login" className="mt-2 inline-block text-green-700 underline">Go to log in</Link>
+        </div>
+      ) : (
+      <>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex gap-4 text-sm">
           <label className="flex items-center gap-1">
@@ -62,8 +76,7 @@ export function RegisterPage() {
         </div>
         {role === 'lgu_staff' && (
           <p className="rounded bg-yellow-50 px-3 py-2 text-xs text-yellow-800">
-            LGU Staff accounts require approval from an existing LGU staff member before you can
-            log in.
+            LGU Staff accounts require approval from an AgriVista Admin before you can log in.
           </p>
         )}
         <label className="auth-label">Full name<input
@@ -134,6 +147,8 @@ export function RegisterPage() {
           Log in
         </Link>
       </p>
+      </>
+      )}
     </AuthShell>
   )
 }

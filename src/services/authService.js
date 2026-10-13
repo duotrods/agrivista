@@ -32,3 +32,26 @@ export async function getProfile(userId) {
   if (error) throw error
   return data
 }
+
+export async function requestPasswordReset(email) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/reset-password`,
+  })
+  if (error) throw error
+}
+
+export async function updatePassword(password) {
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) throw error
+}
+
+export async function updateProfile(userId, { fullName, purok }) {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ full_name: fullName, purok: purok || null })
+    .eq('id', userId)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}

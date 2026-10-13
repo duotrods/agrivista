@@ -85,3 +85,12 @@ export async function createObservation({
   if (error) throw error
   return data
 }
+
+export async function listAllObservations() {
+  const { data, error } = await supabase
+    .from('crop_observations')
+    .select('id, health_status, observation_date, cycle:crop_cycles(field_id)')
+    .order('observation_date', { ascending: false })
+  if (error) throw error
+  return data
+}

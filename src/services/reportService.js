@@ -10,11 +10,38 @@ export async function listReportsForField(fieldId) {
   return data
 }
 
-export async function submitReport({ fieldId, submittedBy, summary }) {
+export async function listReportsForFarmer() {
   const { data, error } = await supabase
     .from('field_reports')
-    .insert({ field_id: fieldId, submitted_by: submittedBy, summary })
-    .select()
+    .select('*, field:rice_fields(field_name)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+async function uploadReportPhoto(fieldId, file) {
+  const ext = file.name.split('.').pop()
+  const path = `reports/${fieldId}/${crypto.randomUUID()}.${ext}`
+  const { error } = await supabase.storage.from('media').upload(path, file)
+  if (error) throw error
+  return supabase.storage.from('media').getPublicUrl(path).data.publicUrl
+}
+
+export async function submitReport({ fieldId, submittedBy, summary, reportDate, cropStatus, fieldCondition, harvestInfo, photoFile }) {
+  const photoUrl = photoFile ? await uploadReportPhoto(fieldId, photoFile) : null
+  const { data, error } = await supabase
+    .from('field_reports')
+    .insert({
+      field_id: fieldId,
+      submitted_by: submittedBy,
+      summary,
+      report_date: reportDate || null,
+      crop_status: cropStatus || null,
+      field_condition: fieldCondition || null,
+      harvest_info: harvestInfo?.trim() || null,
+      photo_url: photoUrl,
+    })
+    .select('*, field:rice_fields(field_name)')
     .single()
   if (error) throw error
   return data

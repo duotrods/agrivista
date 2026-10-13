@@ -12,7 +12,9 @@ export function ProtectedRoute({ children }) {
     signOut()
     return (
       <div className="p-8 text-center text-red-600">
-        Your account has been disabled. Contact the Municipal Agriculture Office for assistance.
+        {profile.role === 'lgu_staff'
+          ? 'Your LGU Staff account is waiting for Admin approval. You can log in once it is approved.'
+          : 'Your account has been disabled. Contact the Municipal Agriculture Office for assistance.'}
       </div>
     )
   }

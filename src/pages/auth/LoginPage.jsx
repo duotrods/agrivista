@@ -53,13 +53,16 @@ export function LoginPage() {
         </button>
       </form>
       <p className="mt-4 text-sm">
+        <Link to="/forgot-password" className="text-green-700 underline">Forgot password?</Link>
+      </p>
+      <p className="mt-2 text-sm">
         No account yet?{' '}
         <Link to="/register" className="text-green-700 underline">
           Register
         </Link>
       </p>
       <p className="mt-2 text-sm">
-        <Link to="/public" className="text-gray-500 underline">
+        <Link to="/map" className="text-gray-500 underline">
           View public field data
         </Link>
       </p>

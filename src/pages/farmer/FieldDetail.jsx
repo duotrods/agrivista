@@ -112,7 +112,7 @@ export function FieldDetail() {
     if (!window.confirm(`Delete "${field.field_name}"? This cannot be undone.`)) return
     try {
       await deleteField(fieldId, user.id)
-      navigate('/')
+      navigate('/fields')
     } catch (err) {
       setError(err.message)
     }
@@ -124,7 +124,7 @@ export function FieldDetail() {
 
   return (
     <div className="page-container detail-page">
-      <Link to="/" className="text-sm text-green-700 hover:underline">
+      <Link to="/fields" className="text-sm text-green-700 hover:underline">
         &larr; Back to My Fields
       </Link>
 
@@ -138,14 +138,22 @@ export function FieldDetail() {
         </p>
       </div>
 
-      <div role="status" className={`mt-4 rounded border p-4 text-sm ${field.is_verified ? 'border-green-200 bg-green-50 text-green-800' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
-        <p className="font-semibold">{field.is_verified ? 'Approved by LGU' : 'Pending LGU approval'}</p>
-        <p className="mt-1">
-          {field.is_verified
-            ? 'Your field is included in Community. Changes to field details, crop status, or boundary need LGU approval again.'
-            : 'LGU staff will review your field information before its data appears in Community. You can continue updating your field while it is pending.'}
-        </p>
-      </div>
+      {(() => {
+        const review = field.is_verified
+          ? { label: 'Approved by LGU', tone: 'border-green-200 bg-green-50 text-green-800', text: 'Your field is included in Community. Changes to field details, crop status, or boundary need LGU approval again.' }
+          : field.review_status === 'rejected'
+            ? { label: 'Rejected by LGU', tone: 'border-red-200 bg-red-50 text-red-800', text: 'Update the field information to resubmit it for review.' }
+            : field.review_status === 'needs_correction'
+              ? { label: 'Needs correction', tone: 'border-orange-200 bg-orange-50 text-orange-800', text: 'Update the field information as noted below. Saving changes resubmits it for review.' }
+              : { label: 'Pending LGU approval', tone: 'border-amber-200 bg-amber-50 text-amber-800', text: 'LGU staff will review your field information before its data appears in Community. You can continue updating your field while it is pending.' }
+        return (
+          <div role="status" className={`mt-4 rounded border p-4 text-sm ${review.tone}`}>
+            <p className="font-semibold">{review.label}</p>
+            <p className="mt-1">{review.text}</p>
+            {!field.is_verified && field.review_note && <p className="mt-2 font-medium">LGU note: {field.review_note}</p>}
+          </div>
+        )
+      })()}
 
       {/* Status */}
       <section className="mt-6 rounded border p-4">
