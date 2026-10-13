@@ -1,6 +1,7 @@
 import { Select } from '../../components/common/Select'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ARFieldView } from '../../components/ar/ARFieldView'
 import { CropCyclesSection } from '../../components/crops/CropCyclesSection'
 import { FieldDetailsInputs } from '../../components/fields/FieldDetailsInputs'
 import { FieldNotes } from '../../components/fields/FieldNotes'
@@ -38,6 +39,7 @@ export function FieldDetail() {
   const [changingStatus, setChangingStatus] = useState(false)
 
   const [editingBoundary, setEditingBoundary] = useState(false)
+  const [showAR, setShowAR] = useState(false)
 
   function loadField() {
     getField(fieldId)
@@ -77,7 +79,7 @@ export function FieldDetail() {
         ]),
       )
       if (cleaned.area_hectares !== null) cleaned.area_hectares = Number(cleaned.area_hectares)
-      const updated = await updateFieldDetails(fieldId, cleaned)
+      const updated = await updateFieldDetails(fieldId, cleaned, user.id)
       setField(updated)
     } catch (err) {
       setError(err.message)
@@ -130,7 +132,9 @@ export function FieldDetail() {
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
+      {showAR && <ARFieldView fields={[field]} linkBase="/fields" onClose={() => setShowAR(false)} />}
       <div className="mt-2">
+        <button type="button" onClick={() => setShowAR(true)} className="float-right rounded border border-green-700 px-3 py-2 text-sm text-green-700 hover:bg-green-50">View in AR</button>
         <h1 className="text-2xl font-semibold text-green-800">{field.field_name}</h1>
         <p className="text-sm text-gray-600">
           GPS: {field.latitude}, {field.longitude}

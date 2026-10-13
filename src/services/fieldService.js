@@ -65,7 +65,7 @@ export async function createField({
   return data
 }
 
-export async function updateFieldDetails(fieldId, updates) {
+export async function updateFieldDetails(fieldId, updates, updatedBy) {
   const { data, error } = await supabase
     .from('rice_fields')
     .update(updates)
@@ -73,6 +73,7 @@ export async function updateFieldDetails(fieldId, updates) {
     .select()
     .single()
   if (error) throw error
+  if (updatedBy) logActivity({ userId: updatedBy, action: 'updated_field', resourceType: 'field', resourceId: fieldId })
   return data
 }
 

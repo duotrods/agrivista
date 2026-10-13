@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { ARFieldView } from '../../components/ar/ARFieldView'
 import { FieldNotes } from '../../components/fields/FieldNotes'
 import { FieldReportsLGU } from '../../components/fields/FieldReportsLGU'
 import { MapView } from '../../components/maps/MapView'
@@ -22,6 +23,7 @@ export function LGUFieldView() {
   const [error, setError] = useState(null)
   const [approving, setApproving] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [showAR, setShowAR] = useState(false)
   const [returning, setReturning] = useState(null)
   const [reviewNote, setReviewNote] = useState('')
 
@@ -98,6 +100,7 @@ export function LGUFieldView() {
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
+      {showAR && <ARFieldView fields={[field]} linkBase="/lgu/fields" onClose={() => setShowAR(false)} />}
       <div className="mt-2 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-green-800">{field.field_name}</h1>
@@ -106,6 +109,7 @@ export function LGUFieldView() {
             {field.area_hectares != null && ` · ${field.area_hectares} ha`}
           </p>
         </div>
+        <button type="button" onClick={() => setShowAR(true)} className="rounded border border-green-700 px-3 py-2 text-sm text-green-700 hover:bg-green-50">View in AR</button>
         {field.is_verified ? (
           <span className="rounded bg-green-100 px-3 py-1 text-sm text-green-800">Approved by LGU</span>
         ) : field.review_status === 'rejected' ? (

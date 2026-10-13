@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase'
+import { logActivity } from './adminService'
 
 export async function listReportsForField(fieldId) {
   const { data, error } = await supabase
@@ -44,6 +45,7 @@ export async function submitReport({ fieldId, submittedBy, summary, reportDate, 
     .select('*, field:rice_fields(field_name)')
     .single()
   if (error) throw error
+  logActivity({ userId: submittedBy, action: 'submitted_report', resourceType: 'field_report', resourceId: data.id })
   return data
 }
 
