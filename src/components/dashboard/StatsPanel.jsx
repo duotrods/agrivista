@@ -11,14 +11,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-
-const STATUS_COLORS = {
-  fallow: '#9CA3AF',
-  land_prep: '#D97706',
-  planted: '#65A30D',
-  growing: '#16A34A',
-  harvested: '#1B5E20',
-}
+import { FIELD_STATUS_COLORS } from '../../lib/constants'
 
 function countBy(items, keyFn) {
   const counts = {}
@@ -86,7 +79,7 @@ export function StatsPanel({ fields }) {
           <PieChart>
             <Pie data={byStatus} dataKey="value" nameKey="name" outerRadius={70} label>
               {byStatus.map((entry) => (
-                <Cell key={entry.name} fill={STATUS_COLORS[entry.name] ?? '#9CA3AF'} />
+                <Cell key={entry.name} fill={FIELD_STATUS_COLORS[entry.name] ?? '#9CA3AF'} />
               ))}
             </Pie>
             <Legend />

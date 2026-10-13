@@ -32,6 +32,10 @@ export function BoundaryDrawer({ fieldId, initialPoints = [], onSaved }) {
     setPoints((prev) => [...prev, { lat: latlng.lat, lng: latlng.lng }])
   }
 
+  function movePoint(index, latlng) {
+    setPoints((prev) => prev.map((p, i) => (i === index ? { lat: latlng.lat, lng: latlng.lng } : p)))
+  }
+
   function undoLastPoint() {
     setPoints((prev) => prev.slice(0, -1))
   }
@@ -60,10 +64,10 @@ export function BoundaryDrawer({ fieldId, initialPoints = [], onSaved }) {
     <div className="flex flex-col gap-3">
       <p className="text-sm text-gray-600">
         In the field: walk to each corner and tap "Add Point (GPS)" there. At a desk: click
-        directly on the map to place each corner instead. You need at least 3 points.
+        directly on the map to place each corner instead, and drag a corner to fine-tune it. You need at least 3 points.
       </p>
 
-      <MapView boundaryPoints={points} onMapClick={addPointAt} />
+      <MapView boundaryPoints={points} onMapClick={addPointAt} onPointMove={movePoint} />
 
       <div className="flex flex-wrap gap-2">
         <button

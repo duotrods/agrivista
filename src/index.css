@@ -125,3 +125,6 @@ h1 { line-height: 1.15; }
 .auth-label .select-trigger { min-height: 48px; font-size: 14px; font-weight: 400; }
 .select-error { display: block; margin-top: 6px; color: #b42318; font-size: 12px; }
 .select-trigger[aria-invalid=true] { border-color: #b42318; }
+.field-pin { background: none; border: 0; filter: drop-shadow(0 2px 2px rgba(0,0,0,.35)); }
+.boundary-vertex { background: #f9a825; border: 3px solid #1b5e20; border-radius: 50%; cursor: grab; box-shadow: 0 1px 4px rgba(0,0,0,.4); }
+.leaflet-container .leaflet-popup-content { margin: 12px 14px; }

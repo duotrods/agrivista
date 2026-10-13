@@ -47,7 +47,7 @@ export default defineConfig({
           },
           {
             // Map tiles: keep already-viewed areas visible offline.
-            urlPattern: /^https:\/\/(server\.arcgisonline\.com|[abc]\.tile\.openstreetmap\.org)\//,
+            urlPattern: /^https:\/\/(server\.arcgisonline\.com|[abc]\.tile\.openstreetmap\.org|api\.maptiler\.com\/maps|api\.mapbox\.com\/styles)\//,
             handler: 'CacheFirst',
             options: {
               cacheName: 'agrivista-map-tiles',

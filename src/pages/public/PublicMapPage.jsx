@@ -21,8 +21,9 @@ export function PublicMapPage() {
         latitude: Number(r.latitude),
         longitude: Number(r.longitude),
         field_name: `Rice field · ${r.purok}`,
+        field_status: r.field_status,
+        purok: r.purok,
         popup_lines: [
-          `Crop status: ${FIELD_STATUS_LABELS[r.field_status] ?? r.field_status}`,
           r.area_hectares != null && `Area: ${r.area_hectares} ha`,
           r.crop_variety && `Variety: ${r.crop_variety}`,
         ].filter(Boolean),

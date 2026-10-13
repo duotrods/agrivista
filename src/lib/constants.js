@@ -8,6 +8,14 @@ export const FIELD_STATUS_LABELS = {
   harvested: 'Harvested',
 }
 
+export const FIELD_STATUS_COLORS = {
+  fallow: '#9CA3AF',
+  land_prep: '#D97706',
+  planted: '#65A30D',
+  growing: '#16A34A',
+  harvested: '#1B5E20',
+}
+
 export const SEED_TYPES = [
   { value: 'inbred', label: 'Inbred' },
   { value: 'hybrid', label: 'Hybrid' },
