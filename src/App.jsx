@@ -26,6 +26,7 @@ import { Reports } from './pages/lgu/Reports'
 import { SystemSettings } from './pages/lgu/SystemSettings'
 import { VerifyFields } from './pages/lgu/VerifyFields'
 import { Notifications } from './pages/Notifications'
+import { ManageUsers } from './pages/admin/ManageUsers'
 import { AboutPage } from './pages/public/AboutPage'
 import { CropStatusPage } from './pages/public/CropStatusPage'
 import { PublicMapPage } from './pages/public/PublicMapPage'
@@ -196,6 +197,14 @@ function App() {
           element={
             <ProtectedRoute>
               <CropMonitoring />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <ManageUsers />
             </ProtectedRoute>
           }
         />

@@ -267,7 +267,45 @@ test('LGU approval controls Community visibility', async (t) => {
     await db.exec(await readFile(new URL('0019_field_review_outcomes.sql', migrations), 'utf8'))
     await db.exec(await readFile(new URL('0020_review_notifications.sql', migrations), 'utf8'))
     await db.exec(await readFile(new URL('0021_public_fields_map.sql', migrations), 'utf8'))
+    await db.exec(await readFile(new URL('0022_report_details.sql', migrations), 'utf8'))
+    await db.exec(await readFile(new URL('0023_user_deletion.sql', migrations), 'utf8'))
     await asUser(null, 'anon')
     assert.equal(await communityCount(), 1)
+  })
+  await t.test('only admins can list and delete users, and never themselves', async () => {
+    const admin = '55555555-5555-4555-8555-555555555555'
+    await db.exec('reset role')
+    await db.query('insert into auth.users (id, email) values ($1, $2)', [admin, 'admin@example.invalid'])
+    await db.query("update profiles set role = 'admin' where id = $1", [admin])
+
+    await asUser(otherFarmer)
+    await assert.rejects(db.query('select * from admin_list_users()'), /Not authorized/)
+    await assert.rejects(db.query('select admin_delete_user($1)', [inactiveStaff]), /Not authorized/)
+
+    await asUser(admin)
+    const listed = (await db.query('select id, role from admin_list_users()')).rows
+    assert.ok(listed.some((u) => u.id === otherFarmer && u.role === 'farmer'))
+    await assert.rejects(db.query('select admin_delete_user($1)', [admin]), /cannot delete your own/)
+    await db.query('select admin_delete_user($1)', [otherFarmer])
+    await db.exec('reset role')
+    assert.equal((await db.query('select count(*)::int as n from auth.users where id = $1', [otherFarmer])).rows[0].n, 0)
+    assert.equal((await db.query('select count(*)::int as n from profiles where id = $1', [otherFarmer])).rows[0].n, 0)
+  })
+
+  await t.test('deleting a user keeps their history and clears the reference', async () => {
+    await db.exec('reset role')
+    await db.query("insert into activity_logs (user_id, action) values ($1, 'approved_field')", [staff])
+    await db.query("insert into announcements (title, message, created_by) values ('Hello', 'World', $1)", [staff])
+    await db.query("insert into field_notes (field_id, author_id, content) values ($1, $2, 'Checked')", [field.id, staff])
+    await db.query('delete from auth.users where id = $1', [staff])
+    assert.equal((await db.query('select count(*)::int as n from profiles where id = $1', [staff])).rows[0].n, 0)
+    assert.equal((await db.query("select user_id from activity_logs where action = 'approved_field'")).rows[0].user_id, null)
+    assert.equal((await db.query("select created_by from announcements where title = 'Hello'")).rows[0].created_by, null)
+    assert.equal((await db.query("select author_id from field_notes where content = 'Checked'")).rows[0].author_id, null)
+    assert.equal((await db.query('select verified_by from rice_fields where id = $1', [field.id])).rows[0].verified_by, null)
+
+    // Deleting a farmer removes their fields but nothing else breaks.
+    await db.query('delete from auth.users where id = $1', [farmer])
+    assert.equal((await db.query('select count(*)::int as n from rice_fields where id = $1', [field.id])).rows[0].n, 0)
   })
 })

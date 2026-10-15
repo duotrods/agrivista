@@ -33,6 +33,18 @@ export async function listLGUAccountsForApproval() {
   return data
 }
 
+export async function listAllUsers() {
+  const { data, error } = await supabase.rpc('admin_list_users')
+  if (error) throw error
+  return data
+}
+
+export async function deleteUser(userId, { deletedBy, email, role }) {
+  const { error } = await supabase.rpc('admin_delete_user', { p_user_id: userId })
+  if (error) throw error
+  logActivity({ userId: deletedBy, action: 'deleted_user', resourceType: 'user', details: { email, role } })
+}
+
 export async function toggleProfileActive(userId, isActive) {
   const { data, error } = await supabase
     .from('profiles')

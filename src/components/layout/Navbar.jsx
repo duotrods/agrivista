@@ -7,7 +7,7 @@ import { NotificationBell } from './NotificationBell'
 const NAV_LINKS = {
   farmer: [['/', 'Dashboard'], ['/fields', 'My Fields'], ['/my-map', 'Map'], ['/monitoring', 'Monitoring'], ['/reports', 'Reports'], ['/notifications', 'Notifications'], ['/profile', 'Profile']],
   lgu_staff: [['/', 'Dashboard'], ['/lgu/fields', 'Rice Fields'], ['/lgu/map', 'Map'], ['/lgu/verify', 'Verify Fields'], ['/lgu/users', 'Farmers'], ['/lgu/reports', 'Monitoring Reports'], ['/lgu/crop-monitoring', 'Crop Monitoring'], ['/lgu/agricultural-reports', 'Agricultural Reports'], ['/notifications', 'Notifications'], ['/lgu/activity', 'Activity Logs'], ['/profile', 'Profile']],
-  admin: [['/', 'Dashboard'], ['/notifications', 'Notifications'], ['/profile', 'Profile']],
+  admin: [['/', 'LGU Approvals'], ['/admin/users', 'Users'], ['/notifications', 'Notifications'], ['/profile', 'Profile']],
 }
 
 export function Navbar() {
