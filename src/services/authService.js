@@ -6,6 +6,8 @@ export async function signUp({ email, password, fullName, purok, role = 'farmer'
     password,
     options: {
       data: { full_name: fullName, purok, role },
+      // Confirmation links return to whichever site the user signed up on.
+      emailRedirectTo: window.location.origin,
     },
   })
   if (error) throw error

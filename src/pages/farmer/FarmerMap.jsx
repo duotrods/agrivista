@@ -12,7 +12,7 @@ export function FarmerMap() {
     if (user) listFieldsForFarmer(user.id).then(setFields).catch((err) => setError(err.message))
   }, [user])
   return (
-    <div className="page-container">
+    <div className="page-container wide-page">
       <PageHeader title="Map" description="Your registered rice fields." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <FieldFilterMap fields={fields} fieldLinkBase="/fields" />

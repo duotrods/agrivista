@@ -31,7 +31,7 @@ export function PublicMapPage() {
   }, [rows, search, purok, status])
 
   return (
-    <div className="page-container public-page">
+    <div className="page-container public-page wide-page">
       <PageHeader eyebrow="RICE FIELD MAP" title="Rice fields across Caganganan." description="LGU-approved fields only. Locations are approximate and no farmer information is shown." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <div className="mb-4 flex flex-wrap gap-2">
@@ -46,7 +46,7 @@ export function PublicMapPage() {
         </Select>
         <span className="self-center text-sm text-gray-600">{loading ? 'Loading...' : `${fields.length} ${fields.length === 1 ? 'field' : 'fields'}`}</span>
       </div>
-      <MapView fields={fields} fieldLinkBase={null} />
+      <MapView fields={fields} fieldLinkBase={null} size="large" />
     </div>
   )
 }

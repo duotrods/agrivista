@@ -119,7 +119,7 @@ function polygonCenter(points) {
   return [points.reduce((sum, p) => sum + p.lat, 0) / points.length, points.reduce((sum, p) => sum + p.lng, 0) / points.length]
 }
 
-export function MapView({ fields = [], boundaryPoints = [], onMapClick, onPointMove, fieldLinkBase = '/fields' }) {
+export function MapView({ fields = [], boundaryPoints = [], onMapClick, onPointMove, fieldLinkBase = '/fields', size = 'default' }) {
   const [layerId, setLayerId] = useState(loadLayerId)
   const [fullscreen, setFullscreen] = useState(false)
   const layer = BASE_LAYERS.find((l) => l.id === layerId) ?? BASE_LAYERS[0]
@@ -146,7 +146,7 @@ export function MapView({ fields = [], boundaryPoints = [], onMapClick, onPointM
   }, [fullscreen])
 
   return (
-    <div className={fullscreen ? 'fixed inset-0 z-2000 bg-white' : 'relative h-96 w-full'}>
+    <div className={fullscreen ? 'fixed inset-0 z-2000 bg-white' : size === 'large' ? 'relative h-[72vh] min-h-115 w-full' : 'relative h-112 w-full'}>
       <div className="absolute right-2 top-2 z-1000 flex max-w-[calc(100%-1rem)] flex-wrap justify-end overflow-hidden rounded border bg-white text-xs shadow" role="group" aria-label="Map layer">
         {BASE_LAYERS.map(({ id, label }) => (
           <button key={id} type="button" aria-pressed={layerId === id} onClick={() => chooseLayer(id)} className={`px-2 py-1 ${layerId === id ? 'bg-green-700 text-white' : 'hover:bg-gray-50'}`}>{label}</button>

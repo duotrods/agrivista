@@ -10,7 +10,7 @@ export function LGUMap() {
     listAllFields().then(setFields).catch((err) => setError(err.message))
   }, [])
   return (
-    <div className="page-container">
+    <div className="page-container wide-page">
       <PageHeader title="Map" description="All registered rice fields." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <FieldFilterMap fields={fields} fieldLinkBase="/lgu/fields" />

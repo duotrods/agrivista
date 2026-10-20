@@ -28,7 +28,7 @@ export function FieldFilterMap({ fields, fieldLinkBase }) {
         </Select>
         <span className="self-center text-sm text-gray-600">{visible.length} {visible.length === 1 ? 'field' : 'fields'}</span>
       </div>
-      <MapView fields={visible} fieldLinkBase={fieldLinkBase} />
+      <MapView fields={visible} fieldLinkBase={fieldLinkBase} size="large" />
     </div>
   )
 }
