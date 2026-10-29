@@ -11,7 +11,19 @@ export function NotificationBell() {
 
   useEffect(() => {
     if (!user) return
-    listNotifications(user.id).then(setNotifications).catch(() => {})
+    const refresh = () => listNotifications(user.id).then(setNotifications).catch(() => {})
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh() }
+    refresh()
+    // Notifications are created by database triggers while the user is logged in,
+    // so poll and refresh when the tab regains focus.
+    const timer = setInterval(onVisible, 30000)
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', refresh)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', refresh)
+    }
   }, [user])
 
   const unreadCount = notifications.filter((n) => !n.is_read).length
