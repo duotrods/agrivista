@@ -1,13 +1,16 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { applyForAudience } from '../../lib/appearance'
 import { Navbar } from './Navbar'
 import { PublicFooter } from './PublicFooter'
 import { Sidebar } from './Sidebar'
 export function Layout() {
   const { pathname } = useLocation()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
+  // Public visitors always see the light theme; the saved theme returns after sign-in.
+  useEffect(() => { if (!loading) applyForAudience(Boolean(user)) }, [user, loading])
   const isAuth = ['/login', '/register', '/forgot-password', '/reset-password'].includes(pathname)
   const showSidebar = Boolean(user) && !isAuth
   const content = <>{isAuth ? <Outlet /> : <main id="main-content"><Outlet /></main>}<footer className="site-footer print:hidden"><span>AgriVista</span><span>Connecting fields. Supporting communities.</span><span>Banaybanay, Davao Oriental</span></footer></>

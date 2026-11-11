@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react'
 // Per-device display preferences (theme, text size, bold text), kept in localStorage.
 const STORAGE_KEY = 'agrivista.appearance'
 const CHANGE_EVENT = 'agrivista:appearance'
-const DEFAULTS = { theme: 'system', textSize: 'default', bold: false }
+const DEFAULTS = { theme: 'light', textSize: 'default', bold: false }
 
 export function loadAppearance() {
   try {
@@ -40,6 +40,12 @@ export function initAppearance() {
     const current = loadAppearance()
     if (current.theme === 'system') applyAppearance(current)
   })
+}
+
+/** Visitors who are not signed in always see the light theme; signed-in users get their saved preferences. */
+export function applyForAudience(signedIn) {
+  const saved = loadAppearance()
+  applyAppearance(signedIn ? saved : { ...saved, theme: 'light' })
 }
 
 /** The theme in effect right now: 'light' or 'dark'. */
