@@ -13,9 +13,11 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.114.0",
     "@tailwindcss/vite": "^4.3.3",
+    "apexcharts": "^8.8.1",
     "leaflet": "^1.9.4",
     "pannellum": "^2.5.7",
     "react": "^19.2.8",
+    "react-apexcharts": "^2.2.0",
     "react-dom": "^19.2.8",
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.18.3",

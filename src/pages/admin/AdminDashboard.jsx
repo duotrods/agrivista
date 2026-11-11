@@ -49,7 +49,7 @@ export function AdminDashboard() {
         Pending approval {pending.length > 0 && `(${pending.length})`}
       </h2>
       <div className="mb-8 overflow-x-auto rounded border">
-        <table className="w-full text-left text-sm">
+        <table className="responsive-table w-full text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="p-2">Name</th>
@@ -77,18 +77,18 @@ export function AdminDashboard() {
             )}
             {pending.map((a) => (
               <tr key={a.id} className="border-t">
-                <td className="p-2">{a.full_name}</td>
-                <td className="p-2">{a.email}</td>
-                <td className="p-2">{a.purok ?? '—'}</td>
-                <td className="p-2">
+                <td data-label="Name" className="p-2">{a.full_name}</td>
+                <td data-label="Email" className="p-2 break-all">{a.email}</td>
+                <td data-label="Purok" className="p-2">{a.purok ?? '—'}</td>
+                <td data-label="Email verified" className="p-2">
                   {a.email_confirmed ? (
                     <span className="text-green-700">✓ Verified</span>
                   ) : (
                     <span className="text-amber-700">✗ Not verified</span>
                   )}
                 </td>
-                <td className="p-2">{new Date(a.created_at).toLocaleDateString()}</td>
-                <td className="p-2">
+                <td data-label="Registered" className="p-2">{new Date(a.created_at).toLocaleDateString()}</td>
+                <td data-label="Action" className="p-2">
                   <button
                     type="button"
                     onClick={() => handleApprove(a.id)}
@@ -105,7 +105,7 @@ export function AdminDashboard() {
 
       <h2 className="mb-2 text-lg font-medium">Approved LGU staff</h2>
       <div className="overflow-x-auto rounded border">
-        <table className="w-full text-left text-sm">
+        <table className="responsive-table w-full text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="p-2">Name</th>
@@ -124,10 +124,10 @@ export function AdminDashboard() {
             )}
             {approved.map((a) => (
               <tr key={a.id} className="border-t">
-                <td className="p-2">{a.full_name}</td>
-                <td className="p-2">{a.email}</td>
-                <td className="p-2">{a.purok ?? '—'}</td>
-                <td className="p-2">
+                <td data-label="Name" className="p-2">{a.full_name}</td>
+                <td data-label="Email" className="p-2 break-all">{a.email}</td>
+                <td data-label="Purok" className="p-2">{a.purok ?? '—'}</td>
+                <td data-label="Action" className="p-2">
                   <button
                     type="button"
                     onClick={() => handleRevoke(a.id)}

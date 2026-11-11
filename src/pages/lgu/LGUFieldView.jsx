@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ARFieldView } from '../../components/ar/ARFieldView'
 import { FieldNotes } from '../../components/fields/FieldNotes'
 import { FieldReportsLGU } from '../../components/fields/FieldReportsLGU'
@@ -15,6 +15,8 @@ import { createNotification } from '../../services/notificationService'
 
 export function LGUFieldView() {
   const { fieldId } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
   const { user, profile } = useAuth()
 
   const [field, setField] = useState(null)
@@ -94,8 +96,19 @@ export function LGUFieldView() {
 
   return (
     <div className="page-container detail-page">
-      <Link to="/lgu/fields" className="text-sm text-green-700 hover:underline">
-        &larr; Back to All Fields
+      <Link
+        to="/lgu/fields"
+        onClick={(e) => {
+          // Return to whichever page opened this field (Verify Fields, Reports, ...).
+          // A direct visit has no in-app history, so fall back to the fields list.
+          if (location.key !== 'default') {
+            e.preventDefault()
+            navigate(-1)
+          }
+        }}
+        className="text-sm text-green-700 hover:underline"
+      >
+        &larr; Back
       </Link>
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}

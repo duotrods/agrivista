@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import logo from '../../assets/logo.png'
 import { useAuth } from '../../hooks/useAuth'
-import { NAV_LINKS } from './navLinks'
+import { LogoutDialog } from './LogoutDialog'
+import { NAV_SECTIONS } from './navLinks'
 
 const ICON_PATHS = {
   home: 'M3 10.5 12 3l9 7.5V21H3z',
@@ -13,6 +15,8 @@ const ICON_PATHS = {
   chart: 'M3 3v18h18M7 15l4-4 3 3 5-6',
   bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0',
   activity: 'M22 12h-4l-3 9L9 3l-3 9H2',
+  settings: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z',
+  megaphone: 'M3 11v2a1 1 0 0 0 1 1h2l5 4V6L6 10H4a1 1 0 0 0-1 1zM15.5 8.5a5 5 0 0 1 0 7M18.5 6a9 9 0 0 1 0 12',
   user: 'M20 21v-1a6 6 0 0 0-6-6h-4a6 6 0 0 0-6 6v1M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
 }
 
@@ -28,6 +32,7 @@ function readCollapsed() {
 
 export function Sidebar({ mobileOpen, onClose }) {
   const { profile } = useAuth()
+  const [confirmingLogout, setConfirmingLogout] = useState(false)
   const [collapsed, setCollapsed] = useState(readCollapsed)
 
   function toggle() {
@@ -41,19 +46,35 @@ export function Sidebar({ mobileOpen, onClose }) {
     <>
       {mobileOpen && <div className="sidebar-backdrop print:hidden" onClick={onClose} aria-hidden="true" />}
       <aside className={`sidebar print:hidden${collapsed ? ' is-collapsed' : ''}${mobileOpen ? ' is-open' : ''}`}>
+        <div className="sidebar-header">
+          <Link to="/" className="brand" onClick={onClose}><img src={logo} alt="" /><span className="sidebar-label">AgriVista<span className="brand-caption">GROWING TOGETHER</span></span></Link>
+          <button type="button" onClick={onClose} aria-label="Close menu" className="sidebar-close">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
         <nav aria-label="Dashboard navigation">
-          {(NAV_LINKS[profile?.role] ?? NAV_LINKS.farmer).map(([to, text, icon]) => (
-            <NavLink key={to} to={to} end={to === '/'} title={collapsed ? text : undefined} onClick={onClose}>
-              <Icon name={icon} />
-              <span className="sidebar-label">{text}</span>
-            </NavLink>
+          {(NAV_SECTIONS[profile?.role] ?? NAV_SECTIONS.farmer).map((section) => (
+            <div key={section.title} className="sidebar-section">
+              <p className="sidebar-section-title">{section.title}</p>
+              {section.links.map(([to, text, icon]) => (
+                <NavLink key={to} to={to} end={to === '/'} title={collapsed ? text : undefined} onClick={onClose}>
+                  <Icon name={icon} />
+                  <span className="sidebar-label">{text}</span>
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <button type="button" className="sidebar-toggle" onClick={toggle} aria-expanded={!collapsed} aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}>
-          <svg className="sidebar-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={collapsed ? 'M9 6l6 6-6 6' : 'M15 6l-6 6 6 6'} /></svg>
-          <span className="sidebar-label">Collapse</span>
+          <svg className="sidebar-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={collapsed ? 'M9 6l6 6-6 6' : 'M15 6l-6 6 6 6'} /></svg>
+          <span className="sidebar-label">Minimize</span>
+        </button>
+        <button type="button" className="sidebar-logout" onClick={() => setConfirmingLogout(true)}>
+          <svg className="sidebar-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>
+          <span className="sidebar-label">Log out</span>
         </button>
       </aside>
+      <LogoutDialog open={confirmingLogout} onClose={() => { setConfirmingLogout(false); onClose() }} />
     </>
   )
 }

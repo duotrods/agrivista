@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PageHeader } from '../../components/layout/PageHeader'
-import { FIELD_STATUSES, FIELD_STATUS_LABELS, HEALTH_STATUSES } from '../../lib/constants'
+import { PeriodFilter } from '../../components/dashboard/PeriodFilter'
+import { StatCard } from '../../components/dashboard/StatCard'
+import { ToolbarIcon } from '../../components/dashboard/ToolbarIcon'
+import { Select } from '../../components/common/Select'
+import { FIELD_STATUSES, FIELD_STATUS_LABELS, HEALTH_STATUSES, PUROKS } from '../../lib/constants'
+import { MONTHS, inPeriod as inPeriodOf, periodYears } from '../../lib/period'
 import { listAllObservations } from '../../services/cropService'
 import { listFarmerProfiles } from '../../services/adminService'
 import { listAllFields } from '../../services/fieldService'
 import { listAllReports } from '../../services/reportService'
 
 const label = (value) => value.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())
+const area = (fields) => fields.reduce((sum, f) => sum + Number(f.area_hectares ?? 0), 0)
 
 function tally(items, keyFn) {
   const counts = new Map()
@@ -25,6 +30,9 @@ function csvCell(value) {
 export function AgriculturalReports() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
+  const [year, setYear] = useState('')
+  const [month, setMonth] = useState('')
+  const [purok, setPurok] = useState('')
 
   useEffect(() => {
     Promise.all([listAllFields(), listFarmerProfiles(), listAllReports(), listAllObservations()])
@@ -32,13 +40,40 @@ export function AgriculturalReports() {
       .catch((err) => setError(err.message))
   }, [])
 
-  const report = useMemo(() => {
+  const years = useMemo(() => (data ? periodYears([...data.fields.map((f) => f.created_at), ...data.reports.map((r) => r.report_date ?? r.created_at)]) : []), [data])
+  const filtered = Boolean(year || month || purok)
+  const periodText = [month && MONTHS[Number(month) - 1], year, purok].filter(Boolean).join(' ') || 'All data'
+
+  // Fields and farmers are filtered by registration date, reports by report date.
+  const view = useMemo(() => {
     if (!data) return null
-    const { fields, farmers, reports, observations } = data
+    const inPeriod = (iso) => inPeriodOf(iso, year, month)
+    const fields = data.fields.filter((f) => inPeriod(f.created_at) && (!purok || f.purok === purok))
+    const fieldIds = new Set(fields.map((f) => f.id))
+    const farmers = data.farmers.filter((p) => inPeriod(p.created_at) && (!purok || p.purok === purok))
+    const reports = data.reports.filter((r) => inPeriod(r.report_date ?? r.created_at) && (!purok || r.field?.purok === purok))
+    const observations = data.observations.filter((o) => fieldIds.has(o.cycle?.field_id))
+    return { fields, farmers, reports, observations }
+  }, [data, year, month, purok])
+
+  const cards = view && [
+    ['Rice fields', view.fields.length, 'fields', 'green', 'Registered fields.'],
+    ['Approved fields', view.fields.filter((f) => f.is_verified).length, 'approved', 'green', 'Approved for Community.'],
+    ['Pending review', view.fields.filter((f) => !f.is_verified && f.review_status === 'pending').length, 'pending', 'amber', 'Waiting for LGU review.'],
+    ['Needs correction', view.fields.filter((f) => !f.is_verified && f.review_status === 'needs_correction').length, 'report', 'amber', 'Sent back to the farmer.'],
+    ['Rejected', view.fields.filter((f) => !f.is_verified && f.review_status === 'rejected').length, 'pending', 'red', 'Not approved.'],
+    ['Total area (ha)', area(view.fields).toFixed(2), 'area', 'green', 'Combined field area.'],
+    ['Registered farmers', view.farmers.length, 'users', 'blue', 'Farmer accounts.'],
+    ['Reports submitted', view.reports.length, 'report', 'blue', 'Monitoring reports.'],
+  ]
+
+  const sections = useMemo(() => {
+    if (!view) return null
+    const { fields, reports, observations } = view
     const statusCounts = tally(fields, (f) => f.field_status)
-    const purokRows = [...new Set(fields.map((f) => f.purok ?? 'Unspecified'))].sort().map((purok) => {
-      const inPurok = fields.filter((f) => (f.purok ?? 'Unspecified') === purok)
-      return [purok, inPurok.length, inPurok.reduce((sum, f) => sum + Number(f.area_hectares ?? 0), 0).toFixed(2)]
+    const purokRows = [...new Set(fields.map((f) => f.purok ?? 'Unspecified'))].sort().map((name) => {
+      const inPurok = fields.filter((f) => (f.purok ?? 'Unspecified') === name)
+      return [name, inPurok.length, area(inPurok).toFixed(2)]
     })
     const latestHealth = new Map()
     for (const obs of observations) {
@@ -50,25 +85,16 @@ export function AgriculturalReports() {
     const projections = new Map()
     for (const f of fields) {
       if (!f.expected_harvest || f.expected_harvest < today) continue
-      const month = f.expected_harvest.slice(0, 7)
-      const row = projections.get(month) ?? { count: 0, area: 0 }
+      const key = f.expected_harvest.slice(0, 7)
+      const row = projections.get(key) ?? { count: 0, area: 0 }
       row.count += 1
       row.area += Number(f.area_hectares ?? 0)
-      projections.set(month, row)
+      projections.set(key, row)
     }
-    const sections = [
-      { title: 'Summary', head: ['Measure', 'Total'], rows: [
-        ['Rice fields', fields.length],
-        ['Approved fields', fields.filter((f) => f.is_verified).length],
-        ['Pending review', fields.filter((f) => !f.is_verified && f.review_status === 'pending').length],
-        ['Needs correction', fields.filter((f) => !f.is_verified && f.review_status === 'needs_correction').length],
-        ['Rejected', fields.filter((f) => !f.is_verified && f.review_status === 'rejected').length],
-        ['Total area (ha)', fields.reduce((sum, f) => sum + Number(f.area_hectares ?? 0), 0).toFixed(2)],
-        ['Registered farmers', farmers.length],
-      ] },
+    return [
       { title: 'Crop status', head: ['Status', 'Fields'], rows: FIELD_STATUSES.map((s) => [FIELD_STATUS_LABELS[s], statusCounts.get(s) ?? 0]) },
       { title: 'Field distribution by purok', head: ['Purok', 'Fields', 'Hectares'], rows: purokRows },
-      { title: 'Field conditions (latest observation)', head: ['Condition', 'Fields'], rows: [
+      { title: 'Field conditions', note: 'Latest observation', head: ['Condition', 'Fields'], rows: [
         ...HEALTH_STATUSES.map((h) => [label(h), healthCounts.get(h) ?? 0]),
         ['No observation yet', fields.length - latestHealth.size],
       ] },
@@ -77,14 +103,15 @@ export function AgriculturalReports() {
         ['Reviewed', reports.filter((r) => r.status === 'reviewed').length],
         ['Awaiting review', reports.filter((r) => r.status !== 'reviewed').length],
       ] },
-      { title: 'Harvest projections', head: ['Expected month', 'Fields', 'Hectares'], rows: [...projections.entries()].sort().map(([month, v]) => [month, v.count, v.area.toFixed(2)]) },
+      { title: 'Harvest projections', head: ['Expected month', 'Fields', 'Hectares'], rows: [...projections.entries()].sort().map(([key, v]) => [key, v.count, v.area.toFixed(2)]) },
     ]
-    return sections
-  }, [data])
+  }, [view])
 
   function handleExport() {
-    const lines = []
-    for (const section of report) {
+    const lines = [csvCell('Period'), csvCell(periodText), '', csvCell('Summary'), 'Measure,Total']
+    for (const [name, value] of cards) lines.push([name, value].map(csvCell).join(','))
+    lines.push('')
+    for (const section of sections) {
       lines.push(csvCell(section.title), section.head.map(csvCell).join(','))
       for (const row of section.rows) lines.push(row.map(csvCell).join(','))
       lines.push('')
@@ -99,36 +126,62 @@ export function AgriculturalReports() {
 
   return (
     <div className="page-container">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <PageHeader title="Agricultural reports" description="A snapshot of rice fields, crops, farmers and harvests in Barangay Caganganan." />
-        <div className="flex gap-2 print:hidden">
-          <button type="button" onClick={() => window.print()} disabled={!report} className="rounded border px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50">Print</button>
-          <button type="button" onClick={handleExport} disabled={!report} className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50">Export CSV</button>
+      <div className="dash-toolbar print:hidden">
+        <div>
+          <h1 className="page-title">Agricultural reports</h1>
+          <p className="page-description">A snapshot of rice fields, crops, farmers and harvests in Barangay Caganganan.</p>
+        </div>
+        <div className="toolbar">
+          <PeriodFilter month={month} year={year} years={years} onMonth={setMonth} onYear={setYear} />
+          <div className="tb-group">
+            <span className="tb-icon"><ToolbarIcon name="pin" /></span>
+            <Select aria-label="Filter by purok" value={purok} onChange={(e) => setPurok(e.target.value)} className="tb-select">
+              <option value="">All puroks</option>
+              {PUROKS.map((p) => <option key={p} value={p}>{p}</option>)}
+            </Select>
+          </div>
+          {purok && !month && !year && <button type="button" onClick={() => setPurok('')} className="tb-btn">Clear</button>}
+          <button type="button" onClick={() => window.print()} disabled={!view} className="tb-btn"><ToolbarIcon name="print" />Print</button>
+          <button type="button" onClick={handleExport} disabled={!view} className="tb-btn"><ToolbarIcon name="download" />Export CSV</button>
         </div>
       </div>
-      <p className="mb-4 hidden text-sm print:block">Generated {new Date().toLocaleDateString()}</p>
+      <p className="mb-4 hidden text-sm print:block">Agricultural report · {periodText} · generated {new Date().toLocaleDateString()}</p>
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      {!report && !error && <p className="text-gray-500">Loading report...</p>}
-      <div className="grid gap-4 md:grid-cols-2">
-        {report?.map((section) => (
-          <section key={section.title} className="break-inside-avoid rounded border p-4">
-            <h2 className="mb-2 text-lg font-medium">{section.title}</h2>
-            <table className="w-full text-left text-sm">
-              <thead className="text-gray-500">
-                <tr>{section.head.map((h) => <th key={h} className="py-1 pr-2 font-normal">{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {section.rows.length === 0 && <tr><td colSpan={section.head.length} className="py-1 text-gray-500">No data.</td></tr>}
-                {section.rows.map((row) => (
-                  <tr key={row[0]} className="border-t">
-                    {row.map((cell, i) => <td key={i} className="py-1 pr-2">{cell}</td>)}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </section>
-        ))}
-      </div>
+      {!view && !error && <p className="dash-empty">Loading report...</p>}
+
+      {view && (
+        <>
+          {filtered && <p className="dash-subtext print:hidden">Showing: {periodText}. Fields and farmers by registration date, reports by report date.</p>}
+          <div className="grid grid-cols-2 items-stretch gap-4 lg:grid-cols-4">
+            {cards.map(([name, value, icon, tone, description]) => (
+              <StatCard key={name} label={name} value={value} description={description} icon={icon} tone={tone} />
+            ))}
+          </div>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            {sections.map((section) => (
+              <section key={section.title} className="dash-card break-inside-avoid">
+                <div className="dash-card-head">
+                  <h2>{section.title}</h2>
+                  {section.note && <span>{section.note}</span>}
+                </div>
+                <table className="dash-table">
+                  <thead>
+                    <tr>{section.head.map((h) => <th key={h}>{h}</th>)}</tr>
+                  </thead>
+                  <tbody>
+                    {section.rows.length === 0 && <tr><td colSpan={section.head.length} className="dash-table-empty">No data.</td></tr>}
+                    {section.rows.map((row) => (
+                      <tr key={row[0]}>
+                        {row.map((cell, i) => <td key={i}>{cell}</td>)}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </section>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

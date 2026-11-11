@@ -1,20 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ARFieldView } from '../../components/ar/ARFieldView'
-import { PageHeader } from '../../components/layout/PageHeader'
+import { StatCard } from '../../components/dashboard/StatCard'
+import { ToolbarIcon } from '../../components/dashboard/ToolbarIcon'
 import { useAuth } from '../../hooks/useAuth'
 import { isReadyToHarvest } from '../../lib/helpers'
 import { listFieldsForFarmer } from '../../services/fieldService'
 import { createHarvestReminders, listNotifications } from '../../services/notificationService'
-
-function Stat({ label, value, loading }) {
-  return (
-    <div className="rounded border bg-white p-4 text-center">
-      <p className="text-3xl font-semibold text-green-800">{loading ? '—' : value}</p>
-      <p className="text-sm text-gray-600">{label}</p>
-    </div>
-  )
-}
 
 export function FarmerDashboard() {
   const { user } = useAuth()
@@ -39,28 +31,33 @@ export function FarmerDashboard() {
   const upcoming = fields
     .filter((f) => f.expected_harvest && new Date(f.expected_harvest) >= new Date(new Date().toDateString()))
     .sort((a, b) => a.expected_harvest.localeCompare(b.expected_harvest))
+  const pendingCount = fields.filter((f) => !f.is_verified && f.review_status === 'pending').length
+  const readyCount = fields.filter(isReadyToHarvest).length
   const unread = notifications.filter((n) => !n.is_read).length
 
   return (
     <div className="page-container">
-      <div className="dashboard-heading mb-4 flex items-center justify-between">
-        <PageHeader title="Dashboard" description="A little care today. A better harvest tomorrow." />
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setShowAR(true)} className="rounded border border-green-700 px-3 py-2 text-sm text-green-700 hover:bg-green-50">View in AR</button>
-          <Link to="/fields/new" className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600">+ Add Field</Link>
+      <div className="dash-toolbar">
+        <div>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-description">A little care today. A better harvest tomorrow.</p>
+        </div>
+        <div className="toolbar">
+          <button type="button" onClick={() => setShowAR(true)} className="tb-btn"><ToolbarIcon name="ar" />View in AR</button>
+          <Link to="/fields/new" className="tb-btn"><ToolbarIcon name="plus" />Add Field</Link>
         </div>
       </div>
       {showAR && <ARFieldView fields={fields} linkBase="/fields" onClose={() => setShowAR(false)} />}
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
       <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4" aria-label="Field summary">
-        <Stat label="Total rice fields" value={fields.length} loading={loading} />
-        <Stat label="Pending verification" value={fields.filter((f) => !f.is_verified && f.review_status === 'pending').length} loading={loading} />
-        <Stat label="Planted" value={count('planted')} loading={loading} />
-        <Stat label="Growing" value={count('growing')} loading={loading} />
-        <Stat label="Ready to harvest" value={fields.filter(isReadyToHarvest).length} loading={loading} />
-        <Stat label="Upcoming harvests" value={upcoming.length} loading={loading} />
-        <Stat label="Unread notifications" value={unread} loading={loading} />
+        <StatCard icon="fields" label="Total rice fields" description="Fields you have registered." value={fields.length} loading={loading} to="/fields" />
+        <StatCard icon="pending" tone="amber" label="Pending verification" description="Waiting for LGU approval." value={pendingCount} loading={loading} pill={pendingCount > 0 ? 'Awaiting LGU' : undefined} />
+        <StatCard icon="planted" label="Planted" description="Fields recently planted." value={count('planted')} loading={loading} />
+        <StatCard icon="sprout" label="Growing" description="Fields in the growing stage." value={count('growing')} loading={loading} />
+        <StatCard icon="harvest" tone="amber" label="Ready to harvest" description="Fields ready for harvest." value={readyCount} loading={loading} pill={readyCount > 0 ? 'Due' : undefined} />
+        <StatCard icon="calendar" tone="blue" label="Upcoming harvests" description="Harvest dates still ahead." value={upcoming.length} loading={loading} />
+        <StatCard icon="bell" tone="red" label="Unread notifications" description="Messages you haven't opened." value={unread} loading={loading} to="/notifications" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

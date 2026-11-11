@@ -69,7 +69,7 @@ export function ManageUsers() {
         <span className="text-sm text-gray-600">{loading ? 'Loading...' : `${visible.length} of ${users.length}`}</span>
       </div>
       <div className="overflow-x-auto rounded border">
-        <table className="w-full text-left text-sm">
+        <table className="responsive-table w-full text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="p-2">Name</th>
@@ -87,13 +87,13 @@ export function ManageUsers() {
               const isSelf = u.id === user.id
               return (
                 <tr key={u.id} className="border-t align-top">
-                  <td className="p-2">{u.full_name}{isSelf && <span className="ml-1 text-xs text-gray-500">(you)</span>}</td>
-                  <td className="p-2 break-all">{u.email}{!u.email_confirmed && <span className="ml-1 text-xs text-amber-700">unverified</span>}</td>
-                  <td className="p-2">{ROLE_LABELS[u.role] ?? u.role}</td>
-                  <td className="p-2">{u.purok ?? '—'}</td>
-                  <td className="p-2">{u.is_active ? <span className="text-green-700">Active</span> : <span className="text-red-600">{u.role === 'lgu_staff' ? 'Pending / disabled' : 'Disabled'}</span>}</td>
-                  <td className="p-2">{new Date(u.created_at).toLocaleDateString()}</td>
-                  <td className="p-2">
+                  <td data-label="Name" className="p-2">{u.full_name}{isSelf && <span className="ml-1 text-xs text-gray-500">(you)</span>}</td>
+                  <td data-label="Email" className="p-2 break-all">{u.email}{!u.email_confirmed && <span className="ml-1 text-xs text-amber-700">unverified</span>}</td>
+                  <td data-label="Role" className="p-2">{ROLE_LABELS[u.role] ?? u.role}</td>
+                  <td data-label="Purok" className="p-2">{u.purok ?? '—'}</td>
+                  <td data-label="Status" className="p-2">{u.is_active ? <span className="text-green-700">Active</span> : <span className="text-red-600">{u.role === 'lgu_staff' ? 'Pending / disabled' : 'Disabled'}</span>}</td>
+                  <td data-label="Registered" className="p-2">{new Date(u.created_at).toLocaleDateString()}</td>
+                  <td data-label="Action" className="p-2">
                     {isSelf ? null : confirmingId === u.id ? (
                       <div className="flex max-w-xs flex-col gap-2">
                         <p className="text-xs text-red-700">

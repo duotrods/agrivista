@@ -1,17 +1,17 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { PasswordInput } from '../components/common/PasswordInput'
 import { Select } from '../components/common/Select'
+import { LogoutDialog } from '../components/layout/LogoutDialog'
 import { PageHeader } from '../components/layout/PageHeader'
 import { useAuth } from '../hooks/useAuth'
 import { PUROKS } from '../lib/constants'
-import { signOut, updatePassword, updateProfile } from '../services/authService'
+import { updatePassword, updateProfile } from '../services/authService'
 
 const ROLE_LABELS = { farmer: 'Farmer', lgu_staff: 'LGU Staff', admin: 'Admin' }
 
 export function Profile() {
   const { user, profile } = useAuth()
-  const navigate = useNavigate()
+  const [confirmingLogout, setConfirmingLogout] = useState(false)
   const [fullName, setFullName] = useState(profile?.full_name ?? '')
   const [purok, setPurok] = useState(profile?.purok ?? '')
   const [password, setPassword] = useState('')
@@ -55,11 +55,6 @@ export function Profile() {
     }
   }
 
-  async function handleLogout() {
-    await signOut()
-    navigate('/login')
-  }
-
   return (
     <div className="page-container">
       <PageHeader title="Profile" description="Your account settings." />
@@ -88,7 +83,8 @@ export function Profile() {
           <button type="submit" className="w-fit rounded border px-3 py-2 text-sm hover:bg-gray-50">Update password</button>
         </form>
       </section>
-      <button type="button" onClick={handleLogout} className="rounded border border-red-600 px-3 py-2 text-sm text-red-700 hover:bg-red-50">Log out</button>
+      <button type="button" onClick={() => setConfirmingLogout(true)} className="rounded border border-red-600 px-3 py-2 text-sm text-red-700 hover:bg-red-50">Log out</button>
+      <LogoutDialog open={confirmingLogout} onClose={() => setConfirmingLogout(false)} />
     </div>
   )
 }

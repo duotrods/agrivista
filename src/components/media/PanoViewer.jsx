@@ -2,7 +2,7 @@ import 'pannellum/build/pannellum.css'
 import 'pannellum/build/pannellum.js'
 import { useEffect, useRef } from 'react'
 
-export function PanoViewer({ imageUrl }) {
+export function PanoViewer({ imageUrl, className = 'h-96 w-full rounded' }) {
   const containerRef = useRef(null)
   const viewerRef = useRef(null)
 
@@ -18,5 +18,5 @@ export function PanoViewer({ imageUrl }) {
     }
   }, [imageUrl])
 
-  return <div ref={containerRef} className="h-96 w-full rounded" />
+  return <div ref={containerRef} className={className} />
 }

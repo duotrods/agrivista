@@ -30,7 +30,7 @@ export function AdminUsers() {
       <PageHeader title="Farmers" description="Registered farmers, their rice fields, and account access." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       <div className="overflow-x-auto rounded border">
-        <table className="w-full text-left text-sm">
+        <table className="responsive-table w-full text-left text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="p-2">Name</th>
@@ -47,10 +47,10 @@ export function AdminUsers() {
               return (
                 <Fragment key={p.id}>
                   <tr className="border-t">
-                    <td className="p-2">{p.full_name}</td>
-                    <td className="p-2">{p.email}</td>
-                    <td className="p-2">{p.purok ?? '—'}</td>
-                    <td className="p-2">
+                    <td data-label="Name" className="p-2">{p.full_name}</td>
+                    <td data-label="Email" className="p-2 break-all">{p.email}</td>
+                    <td data-label="Purok" className="p-2">{p.purok ?? '—'}</td>
+                    <td data-label="Fields" className="p-2">
                       <button
                         type="button"
                         aria-expanded={expanded === p.id}
@@ -60,14 +60,14 @@ export function AdminUsers() {
                         {own.length} {own.length === 1 ? 'field' : 'fields'}
                       </button>
                     </td>
-                    <td className="p-2">
+                    <td data-label="Status" className="p-2">
                       {p.is_active ? (
                         <span className="text-green-700">Active</span>
                       ) : (
                         <span className="text-red-600">Disabled</span>
                       )}
                     </td>
-                    <td className="p-2">
+                    <td data-label="Action" className="p-2">
                       <button
                         type="button"
                         onClick={() => handleToggle(p)}

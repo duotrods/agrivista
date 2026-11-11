@@ -23,7 +23,7 @@ import { AdminUsers } from './pages/lgu/AdminUsers'
 import { Announcements } from './pages/lgu/Announcements'
 import { LGUFieldView } from './pages/lgu/LGUFieldView'
 import { Reports } from './pages/lgu/Reports'
-import { SystemSettings } from './pages/lgu/SystemSettings'
+import { Settings } from './pages/Settings'
 import { VerifyFields } from './pages/lgu/VerifyFields'
 import { Notifications } from './pages/Notifications'
 import { ManageUsers } from './pages/admin/ManageUsers'
@@ -105,13 +105,14 @@ function App() {
           }
         />
         <Route
-          path="/lgu/settings"
+          path="/settings"
           element={
             <ProtectedRoute>
-              <SystemSettings />
+              <Settings />
             </ProtectedRoute>
           }
         />
+        <Route path="/lgu/settings" element={<Navigate to="/settings" replace />} />
         <Route
           path="/lgu/agricultural-reports"
           element={
