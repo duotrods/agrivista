@@ -12,7 +12,14 @@ const ICON_PATHS = {
   report: 'M19 3h-4.200A3 3 0 0 0 9.200 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm-2 14-4-4 1.400-1.400L10 14.200l6.600-6.600L18 9l-8 8z',
   bell: 'M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6V11c0-3.100-1.600-5.600-4.500-6.300V4a1.500 1.500 0 0 0-3 0v.7C7.600 5.400 6 7.900 6 11v5l-2 2v1h16v-1l-2-2z',
   calendar: 'M7 2h2v2h6V2h2v2h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2V2zM5 9v1h14V9z',
+  map: 'M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.500a2.500 2.500 0 1 1 0-5 2.500 2.500 0 0 1 0 5z',
+  lock: 'M18 8h-1V6A5 5 0 0 0 7 6v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2zM9 6a3 3 0 0 1 6 0v2H9V6z',
   planted: 'M12 2C8 8 5 11.500 5 15a7 7 0 0 0 14 0c0-3.500-3-7-7-13z',
+}
+
+/** Solid glyph from the shared icon set. */
+export function GlyphIcon({ name, size = 18 }) {
+  return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d={ICON_PATHS[name] ?? ICON_PATHS.fields} /></svg>
 }
 
 const pad = (value) => (typeof value === 'number' && Number.isInteger(value) && value >= 0 && value < 10 ? String(value).padStart(2, '0') : value)
@@ -26,7 +33,7 @@ export function StatCard({ label, value, description, loading, to, icon, tone = 
     <>
       <div className="stat-head">
         <span className={`stat-icon tone-${tone}`}>
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path fillRule="evenodd" d={ICON_PATHS[icon] ?? ICON_PATHS.fields} /></svg>
+          <GlyphIcon name={icon} />
         </span>
         <span className="stat-title">{label}</span>
         {pill && !loading && <span className={`stat-pill tone-${tone}`}>{pill}</span>}

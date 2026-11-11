@@ -1,18 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { StatCard } from '../../components/dashboard/StatCard'
+import { STATUS_CARDS } from '../../components/dashboard/statusCards'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { FIELD_STATUSES, FIELD_STATUS_LABELS } from '../../lib/constants'
 import { isReadyToHarvest } from '../../lib/helpers'
 import { listAllFields, listRecentStatusLogs } from '../../services/fieldService'
-
-const STATUS_CARDS = {
-  fallow: { icon: 'area', tone: 'blue', description: 'Fields not yet in use.' },
-  land_prep: { icon: 'fields', tone: 'amber', description: 'Being prepared for planting.' },
-  planted: { icon: 'planted', tone: 'green', description: 'Recently planted fields.' },
-  growing: { icon: 'sprout', tone: 'green', description: 'Crops in the growing stage.' },
-  harvested: { icon: 'harvest', tone: 'amber', description: 'Harvest completed.' },
-}
 
 export function CropMonitoring() {
   const [fields, setFields] = useState([])

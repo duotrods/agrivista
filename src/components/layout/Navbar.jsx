@@ -20,7 +20,7 @@ export function Navbar({ onMenuClick }) {
   return (
     <nav className="topbar print:hidden" aria-label="Main navigation">
       <Link to="/" className="brand"><img src={logo} alt="" /><span>AgriVista<span className="brand-caption">GROWING TOGETHER</span></span></Link>
-      <div className="nav-links"><NavLink to="/" end>Home</NavLink><NavLink to="/map">Rice field map</NavLink><NavLink to="/statistics">Statistics</NavLink><NavLink to="/crop-status">Crop status</NavLink><NavLink to="/about">About</NavLink><NavLink to="/login">Log in</NavLink><NavLink to="/register">Get started ↗</NavLink></div>
+      <div className="nav-links"><NavLink to="/" end>Home</NavLink><NavLink to="/map">Rice field map</NavLink><NavLink to="/statistics">Statistics</NavLink><NavLink to="/crop-status">Crop status</NavLink><NavLink to="/about">About</NavLink><NavLink to="/login">Log in</NavLink><Link to="/register" className="nav-cta">Get started</Link></div>
     </nav>
   )
 }

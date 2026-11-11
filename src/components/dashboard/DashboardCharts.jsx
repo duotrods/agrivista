@@ -88,11 +88,10 @@ export function ConditionChart({ reports }) {
   )
 }
 
-export function PurokChart({ fields }) {
+export function PurokCountChart({ data, title = 'Fields by purok', subtitle = 'Registered fields' }) {
   const theme = useResolvedTheme()
-  const data = countBy(fields, (f) => f.purok)
   return (
-    <ChartCard title="Fields by purok" subtitle="Registered fields">
+    <ChartCard title={title} subtitle={subtitle}>
       {data.length === 0 ? (
         <p className="dash-empty">No fields registered yet.</p>
       ) : (
@@ -114,9 +113,12 @@ export function PurokChart({ fields }) {
   )
 }
 
-export function StatusDonut({ fields }) {
+export function PurokChart({ fields }) {
+  return <PurokCountChart data={countBy(fields, (f) => f.purok)} />
+}
+
+export function StatusCountDonut({ data }) {
   const theme = useResolvedTheme()
-  const data = countBy(fields, (f) => f.field_status)
   return (
     <ChartCard title="Status distribution" subtitle="By crop stage" minHeight={300}>
       {data.length === 0 ? (
@@ -138,4 +140,8 @@ export function StatusDonut({ fields }) {
       )}
     </ChartCard>
   )
+}
+
+export function StatusDonut({ fields }) {
+  return <StatusCountDonut data={countBy(fields, (f) => f.field_status)} />
 }

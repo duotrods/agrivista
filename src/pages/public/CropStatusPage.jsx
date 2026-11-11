@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { StatCard } from '../../components/dashboard/StatCard'
+import { STATUS_CARDS } from '../../components/dashboard/statusCards'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { FIELD_STATUSES, FIELD_STATUS_LABELS } from '../../lib/constants'
 import { usePublicStats } from './publicData'
@@ -28,28 +30,30 @@ export function CropStatusPage() {
     <div className="page-container public-page">
       <PageHeader eyebrow="CROP STATUS" title="Where our rice crops stand." description="Counts of LGU-approved fields at each stage of the crop cycle." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      <div className="mb-6 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 items-stretch gap-4 md:grid-cols-3 xl:grid-cols-5">
         {FIELD_STATUSES.map((s) => (
-          <div key={s} className="rounded border bg-white p-4 text-center">
-            <p className="text-3xl font-semibold text-green-800">{loading ? '—' : byStatus[s] ?? 0}</p>
-            <p className="text-sm font-medium">{FIELD_STATUS_LABELS[s]}</p>
-            <p className="mt-1 text-xs text-gray-500">{DESCRIPTIONS[s]}</p>
-          </div>
+          <StatCard key={s} {...STATUS_CARDS[s]} description={DESCRIPTIONS[s]} label={FIELD_STATUS_LABELS[s]} value={byStatus[s] ?? 0} loading={loading || Boolean(error)} />
         ))}
       </div>
-      <div className="overflow-x-auto rounded border bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr><th className="p-2">Purok</th>{FIELD_STATUSES.map((s) => <th key={s} className="p-2">{FIELD_STATUS_LABELS[s]}</th>)}</tr>
-          </thead>
-          <tbody>
-            {puroks.length === 0 && <tr><td colSpan={FIELD_STATUSES.length + 1} className="p-2 text-gray-500">No approved fields yet.</td></tr>}
-            {puroks.map((p) => (
-              <tr key={p} className="border-t"><td className="p-2">{p}</td>{FIELD_STATUSES.map((s) => <td key={s} className="p-2">{matrix[p][s] ?? 0}</td>)}</tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <section className="dash-card mt-4">
+        <div className="dash-card-head">
+          <h2>Crop status by purok</h2>
+          <span>Approved fields</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="dash-table">
+            <thead>
+              <tr><th>Purok</th>{FIELD_STATUSES.map((s) => <th key={s}>{FIELD_STATUS_LABELS[s]}</th>)}</tr>
+            </thead>
+            <tbody>
+              {puroks.length === 0 && <tr><td colSpan={FIELD_STATUSES.length + 1} className="dash-table-empty">No approved fields yet.</td></tr>}
+              {puroks.map((p) => (
+                <tr key={p}><td>{p}</td>{FIELD_STATUSES.map((s) => <td key={s}>{matrix[p][s] ?? 0}</td>)}</tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   )
 }
