@@ -33,7 +33,6 @@ export function FarmerDashboard() {
     .sort((a, b) => a.expected_harvest.localeCompare(b.expected_harvest))
   const pendingCount = fields.filter((f) => !f.is_verified && f.review_status === 'pending').length
   const readyCount = fields.filter(isReadyToHarvest).length
-  const unread = notifications.filter((n) => !n.is_read).length
 
   return (
     <div className="page-container">
@@ -50,14 +49,13 @@ export function FarmerDashboard() {
       {showAR && <ARFieldView fields={fields} linkBase="/fields" onClose={() => setShowAR(false)} />}
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4" aria-label="Field summary">
+      <div className="mb-6 grid grid-cols-2 items-stretch gap-4 lg:grid-cols-3" aria-label="Field summary">
         <StatCard icon="fields" label="Total rice fields" description="Fields you have registered." value={fields.length} loading={loading} to="/fields" />
         <StatCard icon="pending" tone="amber" label="Pending verification" description="Waiting for LGU approval." value={pendingCount} loading={loading} pill={pendingCount > 0 ? 'Awaiting LGU' : undefined} />
         <StatCard icon="planted" label="Planted" description="Fields recently planted." value={count('planted')} loading={loading} />
         <StatCard icon="sprout" label="Growing" description="Fields in the growing stage." value={count('growing')} loading={loading} />
         <StatCard icon="harvest" tone="amber" label="Ready to harvest" description="Fields ready for harvest." value={readyCount} loading={loading} pill={readyCount > 0 ? 'Due' : undefined} />
         <StatCard icon="calendar" tone="blue" label="Upcoming harvests" description="Harvest dates still ahead." value={upcoming.length} loading={loading} />
-        <StatCard icon="bell" tone="red" label="Unread notifications" description="Messages you haven't opened." value={unread} loading={loading} to="/notifications" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

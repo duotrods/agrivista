@@ -122,7 +122,7 @@ export function ARFieldView({ fields, linkBase = '/fields', onClose }) {
             <span className="text-sm font-medium">{field.field_name}</span>
             <span className="text-xs text-white/70">{formatDistance(distance)}</span>
             <span
-              className="rounded px-1.5 py-0.5 text-[10px] font-medium text-white"
+              className="rounded px-1.5 py-0.5 text-[0.625rem] font-medium text-white"
               style={{ backgroundColor: category.color }}
             >
               {category.label}

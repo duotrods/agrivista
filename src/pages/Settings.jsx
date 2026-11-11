@@ -8,7 +8,7 @@ const THEMES = [
   ['dark', 'Night', 'M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z'],
   ['system', 'System', 'M3 5h18v11H3zM8 21h8M12 16v5'],
 ]
-const TEXT_SIZES = [['default', 'Default'], ['large', 'Large']]
+const TEXT_SIZES = [['small', 'Small'], ['default', 'Default'], ['large', 'Large']]
 
 function Row({ title, description, children }) {
   return (
@@ -49,7 +49,7 @@ export function Settings() {
           </div>
         </Row>
 
-        <Row title="Text size" description="Make text larger across the app.">
+        <Row title="Text size" description="Make text smaller or larger across the app.">
           <div className="seg" role="group" aria-label="Text size">
             {TEXT_SIZES.map(([id, label]) => (
               <button key={id} type="button" aria-pressed={appearance.textSize === id} onClick={() => update({ textSize: id })}>{label}</button>

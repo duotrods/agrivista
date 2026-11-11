@@ -14,7 +14,9 @@ export function ReportDetails({ report }) {
       <p className="mt-1 text-sm">{report.summary}</p>
       {report.harvest_info && <p className="mt-1 text-xs text-gray-600">Harvest: {report.harvest_info}</p>}
       {report.photo_url && (
-        <a href={report.photo_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs text-green-700 underline">View photo</a>
+        <a href={report.photo_url} target="_blank" rel="noreferrer" className="mt-2 inline-block" title="Open full size">
+          <img src={report.photo_url} alt="Report photo" loading="lazy" className="max-h-52 max-w-full rounded-lg border object-cover" />
+        </a>
       )}
     </>
   )

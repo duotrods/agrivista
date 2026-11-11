@@ -4,7 +4,7 @@ import { CROP_VARIETIES, SEASONS } from '../../lib/constants'
 import { createCycle, listCyclesForField } from '../../services/cropService'
 import { CropCycleCard } from './CropCycleCard'
 
-export function CropCyclesSection({ fieldId }) {
+export function CropCyclesSection({ fieldId, readOnly = false }) {
   const [cycles, setCycles] = useState([])
   const [error, setError] = useState(null)
 
@@ -35,50 +35,52 @@ export function CropCyclesSection({ fieldId }) {
 
   return (
     <div>
-      <form onSubmit={handleCreate} className="flex flex-wrap items-end gap-2 rounded border p-3">
-        <Select aria-label="Season" value={season} onChange={(e) => setSeason(e.target.value)} className="rounded border px-2 py-1.5 text-sm">
-          {SEASONS.map((s) => (
-            <option key={s} value={s}>
-              {s} season
-            </option>
-          ))}
-        </Select>
-        <input
-          type="number"
-          value={year}
-          onChange={(e) => setYear(Number(e.target.value))}
-          className="w-20 rounded border px-2 py-1.5 text-sm"
-        />
-        <Select
-          aria-label="Crop variety" value={cropVariety}
-          onChange={(e) => setCropVariety(e.target.value)}
-          className="rounded border px-2 py-1.5 text-sm"
-        >
-          <option value="">Crop variety...</option>
-          {CROP_VARIETIES.map((v) => (
-            <option key={v} value={v}>
-              {v}
-            </option>
-          ))}
-        </Select>
-        <label className="text-xs text-gray-600">
-          Planting date
+      {!readOnly && (
+        <form onSubmit={handleCreate} className="flex flex-wrap items-end gap-2 rounded border p-3">
+          <Select aria-label="Season" value={season} onChange={(e) => setSeason(e.target.value)} className="rounded border px-2 py-1.5 text-sm">
+            {SEASONS.map((s) => (
+              <option key={s} value={s}>
+                {s} season
+              </option>
+            ))}
+          </Select>
           <input
-            type="date"
-            value={plantingDate}
-            onChange={(e) => setPlantingDate(e.target.value)}
-            required
-            className="mt-1 block rounded border px-2 py-1.5 text-sm"
+            type="number"
+            value={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+            className="w-20 rounded border px-2 py-1.5 text-sm"
           />
-        </label>
-        <button
-          type="submit"
-          disabled={creating}
-          className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
-        >
-          {creating ? 'Starting...' : 'Start New Cycle'}
-        </button>
-      </form>
+          <Select
+            aria-label="Crop variety" value={cropVariety}
+            onChange={(e) => setCropVariety(e.target.value)}
+            className="rounded border px-2 py-1.5 text-sm"
+          >
+            <option value="">Crop variety...</option>
+            {CROP_VARIETIES.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </Select>
+          <label className="text-xs text-gray-600">
+            Planting date
+            <input
+              type="date"
+              value={plantingDate}
+              onChange={(e) => setPlantingDate(e.target.value)}
+              required
+              className="mt-1 block rounded border px-2 py-1.5 text-sm"
+            />
+          </label>
+          <button
+            type="submit"
+            disabled={creating}
+            className="rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
+          >
+            {creating ? 'Starting...' : 'Start New Cycle'}
+          </button>
+        </form>
+      )}
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
@@ -88,6 +90,7 @@ export function CropCyclesSection({ fieldId }) {
           <CropCycleCard
             key={cycle.id}
             cycle={cycle}
+            readOnly={readOnly}
             onUpdated={(updated) =>
               setCycles((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
             }

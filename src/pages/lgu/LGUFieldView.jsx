@@ -5,7 +5,6 @@ import { FieldNotes } from '../../components/fields/FieldNotes'
 import { FieldReportsLGU } from '../../components/fields/FieldReportsLGU'
 import { MapView } from '../../components/maps/MapView'
 import { MediaGallery } from '../../components/media/MediaGallery'
-import { MediaUpload } from '../../components/media/MediaUpload'
 import { useAuth } from '../../hooks/useAuth'
 import { FIELD_STATUS_LABELS, SEED_TYPES } from '../../lib/constants'
 import { listCyclesForField } from '../../services/cropService'
@@ -231,13 +230,12 @@ export function LGUFieldView() {
 
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Photos, 360° &amp; Video</h2>
-        <MediaUpload fieldId={fieldId} onUploaded={(m) => setMedia((prev) => [m, ...prev])} />
         <MediaGallery media={media} />
       </section>
 
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Notes</h2>
-        <FieldNotes fieldId={fieldId} />
+        <FieldNotes fieldId={fieldId} readOnly />
       </section>
 
       <section className="mt-6 rounded border p-4">

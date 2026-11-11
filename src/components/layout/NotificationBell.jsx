@@ -77,7 +77,7 @@ export function NotificationBell() {
           <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0" />
         </svg>
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-semibold text-white">
+          <span className="absolute -right-0.5 -top-0.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-red-600 px-1 text-[0.5625rem] font-semibold text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -114,7 +114,7 @@ export function NotificationBell() {
                       <span className="min-w-0 flex-1">
                         <span className={`block truncate text-sm ${n.is_read ? 'text-gray-600' : 'font-semibold text-gray-900'}`}>{n.title}</span>
                         {n.message && <span className="mt-0.5 line-clamp-2 block text-xs text-gray-500">{n.message}</span>}
-                        <span className="mt-1 block text-[11px] text-gray-400">{timeAgo(n.created_at)}</span>
+                        <span className="mt-1 block text-[0.6875rem] text-gray-400">{timeAgo(n.created_at)}</span>
                       </span>
                     </button>
                   </li>

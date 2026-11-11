@@ -8,14 +8,12 @@ import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
 import { FarmerMap } from './pages/farmer/FarmerMap'
-import { FarmerReports } from './pages/farmer/FarmerReports'
 import { Monitoring } from './pages/farmer/Monitoring'
 import { MyFields } from './pages/farmer/MyFields'
 import { CropMonitoring } from './pages/lgu/CropMonitoring'
 import { LGUMap } from './pages/lgu/LGUMap'
 import { RiceFields } from './pages/lgu/RiceFields'
 import { Profile } from './pages/Profile'
-import { AddField } from './pages/farmer/AddField'
 import { FieldDetail } from './pages/farmer/FieldDetail'
 import { AgriculturalReports } from './pages/lgu/AgriculturalReports'
 import { ActivityLogs } from './pages/lgu/ActivityLogs'
@@ -60,7 +58,7 @@ function App() {
           path="/fields/new"
           element={
             <ProtectedRoute>
-              <AddField />
+              <MyFields />
             </ProtectedRoute>
           }
         />
@@ -161,14 +159,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route
-          path="/reports"
-          element={
-            <ProtectedRoute>
-              <FarmerReports />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/reports" element={<Navigate to="/monitoring" replace />} />
         <Route
           path="/profile"
           element={

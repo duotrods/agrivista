@@ -1,23 +1,20 @@
-import { Select } from '../../components/common/Select'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ARFieldView } from '../../components/ar/ARFieldView'
 import { CropCyclesSection } from '../../components/crops/CropCyclesSection'
 import { FieldDetailsInputs } from '../../components/fields/FieldDetailsInputs'
 import { FieldNotes } from '../../components/fields/FieldNotes'
-import { FieldReports } from '../../components/fields/FieldReports'
+import { FieldReportsList } from '../../components/fields/FieldReportsList'
 import { BoundaryDrawer } from '../../components/maps/BoundaryDrawer'
 import { MapView } from '../../components/maps/MapView'
 import { MediaGallery } from '../../components/media/MediaGallery'
 import { MediaUpload } from '../../components/media/MediaUpload'
 import { useAuth } from '../../hooks/useAuth'
-import { FIELD_STATUSES, FIELD_STATUS_LABELS } from '../../lib/constants'
+import { FIELD_STATUS_LABELS, SEED_TYPES } from '../../lib/constants'
 import {
   deleteField,
   getField,
-  listStatusLogs,
   updateFieldDetails,
-  updateFieldStatus,
 } from '../../services/fieldService'
 import { listMediaForField } from '../../services/mediaService'
 
@@ -26,17 +23,15 @@ export function FieldDetail() {
   const { user } = useAuth()
   const navigate = useNavigate()
 
+  const [searchParams] = useSearchParams()
+  const wantsEdit = searchParams.get('edit') === '1'
   const [field, setField] = useState(null)
   const [media, setMedia] = useState([])
-  const [statusLogs, setStatusLogs] = useState([])
   const [error, setError] = useState(null)
 
   const [details, setDetails] = useState(null)
   const [savingDetails, setSavingDetails] = useState(false)
 
-  const [newStatus, setNewStatus] = useState('')
-  const [statusRemarks, setStatusRemarks] = useState('')
-  const [changingStatus, setChangingStatus] = useState(false)
 
   const [editingBoundary, setEditingBoundary] = useState(false)
   const [showAR, setShowAR] = useState(false)
@@ -56,7 +51,6 @@ export function FieldDetail() {
           planting_date: f.planting_date ?? '',
           expected_harvest: f.expected_harvest ?? '',
         })
-        setNewStatus(f.field_status)
       })
       .catch((err) => setError(err.message))
   }
@@ -64,8 +58,15 @@ export function FieldDetail() {
   useEffect(() => {
     loadField()
     listMediaForField(fieldId).then(setMedia).catch((err) => setError(err.message))
-    listStatusLogs(fieldId).then(setStatusLogs).catch((err) => setError(err.message))
   }, [fieldId])
+
+  // Coming from the Edit button on My Fields: jump to the editable details form.
+  useEffect(() => {
+    if (!wantsEdit || !field) return
+    const section = document.getElementById('field-details')
+    section?.scrollIntoView({ block: 'start' })
+    section?.querySelector('input, select, textarea')?.focus({ preventScroll: true })
+  }, [wantsEdit, field])
 
   async function handleSaveDetails(e) {
     e.preventDefault()
@@ -85,28 +86,6 @@ export function FieldDetail() {
       setError(err.message)
     } finally {
       setSavingDetails(false)
-    }
-  }
-
-  async function handleStatusChange(e) {
-    e.preventDefault()
-    setChangingStatus(true)
-    setError(null)
-    try {
-      await updateFieldStatus({
-        fieldId,
-        changedBy: user.id,
-        oldStatus: field.field_status,
-        newStatus,
-        remarks: statusRemarks || null,
-      })
-      setStatusRemarks('')
-      loadField()
-      listStatusLogs(fieldId).then(setStatusLogs)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setChangingStatus(false)
     }
   }
 
@@ -134,10 +113,15 @@ export function FieldDetail() {
 
       {showAR && <ARFieldView fields={[field]} linkBase="/fields" onClose={() => setShowAR(false)} />}
       <div className="mt-2">
-        <button type="button" onClick={() => setShowAR(true)} className="float-right rounded border border-green-700 px-3 py-2 text-sm text-green-700 hover:bg-green-50">View in AR</button>
+        <div className="float-right flex gap-2">
+          <button type="button" onClick={() => setShowAR(true)} className="tb-btn">View in AR</button>
+          {wantsEdit
+            ? <Link to={`/fields/${fieldId}`} className="tb-btn">Done editing</Link>
+            : <Link to={`/fields/${fieldId}?edit=1`} className="tb-btn is-primary">Edit</Link>}
+        </div>
         <h1 className="text-2xl font-semibold text-green-800">{field.field_name}</h1>
         <p className="text-sm text-gray-600">
-          GPS: {field.latitude}, {field.longitude}
+          Crop status: {FIELD_STATUS_LABELS[field.field_status] ?? field.field_status} · GPS: {field.latitude}, {field.longitude}
           {field.area_hectares != null && ` · ${field.area_hectares} ha`}
         </p>
       </div>
@@ -159,74 +143,52 @@ export function FieldDetail() {
         )
       })()}
 
-      {/* Status */}
-      <section className="mt-6 rounded border p-4">
-        <h2 className="mb-2 text-lg font-medium">Crop Status</h2>
-        <p className="mb-3 text-sm">
-          Current: <span className="font-semibold">{FIELD_STATUS_LABELS[field.field_status] ?? field.field_status}</span>
-        </p>
-        <form onSubmit={handleStatusChange} className="flex flex-col gap-2">
-          <Select
-            aria-label="Crop status" value={newStatus}
-            onChange={(e) => setNewStatus(e.target.value)}
-            className="rounded border px-3 py-2 text-sm"
-          >
-            {FIELD_STATUSES.map((s) => (
-              <option key={s} value={s}>
-                {FIELD_STATUS_LABELS[s]}
-              </option>
-            ))}
-          </Select>
-          <textarea
-            placeholder="Remarks (optional)"
-            value={statusRemarks}
-            onChange={(e) => setStatusRemarks(e.target.value)}
-            className="rounded border px-3 py-2 text-sm"
-          />
-          <button
-            type="submit"
-            disabled={changingStatus || newStatus === field.field_status}
-            className="w-fit rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
-          >
-            {changingStatus ? 'Updating...' : 'Update Crop Status'}
-          </button>
-        </form>
-
-        {statusLogs.length > 0 && (
-          <ul className="mt-3 flex flex-col gap-1 border-t pt-3 text-xs text-gray-600">
-            {statusLogs.map((log) => (
-              <li key={log.id}>
-                {new Date(log.created_at).toLocaleDateString()}: {FIELD_STATUS_LABELS[log.old_status] ?? log.old_status ?? '—'} →{' '}
-                {FIELD_STATUS_LABELS[log.new_status] ?? log.new_status}
-                {log.remarks && ` (${log.remarks})`}
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
       {/* Details */}
-      <section className="mt-6 rounded border p-4">
-        <h2 className="mb-2 text-lg font-medium">Field Details</h2>
-        <form onSubmit={handleSaveDetails} className="flex flex-col gap-2">
-          <FieldDetailsInputs
-            details={details}
-            onChange={(name, value) => setDetails((current) => ({ ...current, [name]: value }))}
-          />
-          <button
-            type="submit"
-            disabled={savingDetails}
-            className="w-fit rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
-          >
-            {savingDetails ? 'Saving...' : 'Save Details'}
-          </button>
-        </form>
+      <section id="field-details" className="mt-6 rounded border p-4">
+        <h2 className="mb-3 text-lg font-medium">Field Details</h2>
+        {wantsEdit ? (
+          <form onSubmit={handleSaveDetails} className="flex flex-col gap-2">
+            <FieldDetailsInputs
+              details={details}
+              requireSchedule={field.field_status !== 'fallow' && field.field_status !== 'land_prep'}
+              onChange={(name, value) => setDetails((current) => ({ ...current, [name]: value }))}
+            />
+            <button
+              type="submit"
+              disabled={savingDetails}
+              className="w-fit rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
+            >
+              {savingDetails ? 'Saving...' : 'Save Details'}
+            </button>
+          </form>
+        ) : (
+          <div className="form-grid">
+            {[
+              ['Owner name', field.owner_name],
+              ['Maintainer name', field.maintainer_name],
+              ['Area (hectares)', field.area_hectares],
+              ['Inbred / Hybrid', SEED_TYPES.find((t) => t.value === field.seed_type)?.label ?? field.seed_type],
+              ['Date planted', field.planting_date],
+              ['Estimated harvest', field.expected_harvest],
+              ['Crop variety', field.crop_variety],
+              ['Soil type', field.soil_type],
+              ['Irrigation type', field.irrigation_type],
+            ].map(([name, value]) => (
+              <div key={name} className="form-field">
+                <span>{name}</span>
+                <p className="text-sm font-normal text-gray-900">{value || '—'}</p>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Boundary */}
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Field Boundary</h2>
-        {editingBoundary || !field.polygon_coords ? (
+        {!wantsEdit ? (
+          field.polygon_coords ? <MapView boundaryPoints={field.polygon_coords} /> : <p className="text-sm text-gray-500">No boundary drawn yet.</p>
+        ) : editingBoundary || !field.polygon_coords ? (
           <BoundaryDrawer
             fieldId={fieldId}
             initialPoints={field.polygon_coords ?? []}
@@ -253,35 +215,37 @@ export function FieldDetail() {
       {/* Crop Cycles */}
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Crop Cycles</h2>
-        <CropCyclesSection fieldId={fieldId} />
+        <CropCyclesSection fieldId={fieldId} readOnly={!wantsEdit} />
       </section>
 
       {/* Media */}
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Photos, 360° &amp; Video</h2>
-        <MediaUpload fieldId={fieldId} onUploaded={(m) => setMedia((prev) => [m, ...prev])} />
+        {wantsEdit && <MediaUpload fieldId={fieldId} onUploaded={(m) => setMedia((prev) => [m, ...prev])} />}
         <MediaGallery media={media} />
       </section>
 
       {/* Notes */}
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Notes</h2>
-        <FieldNotes fieldId={fieldId} />
+        <FieldNotes fieldId={fieldId} readOnly={!wantsEdit} />
       </section>
 
-      {/* Monitoring Reports */}
+      {/* Monitoring Reports (read-only; reports are sent from the Monitoring page) */}
       <section className="mt-6 rounded border p-4">
         <h2 className="mb-2 text-lg font-medium">Monitoring Reports</h2>
-        <FieldReports fieldId={fieldId} />
+        <FieldReportsList fieldId={fieldId} />
       </section>
 
-      <button
-        type="button"
-        onClick={handleDelete}
-        className="mt-6 rounded border border-red-600 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
-      >
-        Delete Field
-      </button>
+      {wantsEdit && (
+        <button
+          type="button"
+          onClick={handleDelete}
+          className="mt-6 rounded border border-red-600 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+        >
+          Delete Field
+        </button>
+      )}
     </div>
   )
 }

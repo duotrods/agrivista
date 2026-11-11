@@ -1,15 +1,17 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ARFieldView } from '../../components/ar/ARFieldView'
-import { ReportDetails } from '../../components/fields/ReportDetails'
 import { PeriodFilter } from '../../components/dashboard/PeriodFilter'
 import { ToolbarIcon } from '../../components/dashboard/ToolbarIcon'
 import { StatCard } from '../../components/dashboard/StatCard'
+import { FIELD_STATUS_LABELS } from '../../lib/constants'
 import { isReadyToHarvest } from '../../lib/helpers'
 import { inPeriod as inPeriodOf, periodYears } from '../../lib/period'
 import { listFarmerProfiles } from '../../services/adminService'
 import { listAllFields } from '../../services/fieldService'
 import { listAllReports } from '../../services/reportService'
+
+const label = (value) => value.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())
 
 const lazyChart = (name) => lazy(() => import('../../components/dashboard/DashboardCharts').then((m) => ({ default: m[name] })))
 const ConditionChart = lazyChart('ConditionChart')
@@ -98,11 +100,13 @@ export function LGUDashboard() {
           </div>
           {!loading && periodReports.length === 0 && <p className="dash-empty">{filtered ? 'No reports in this period.' : 'No reports submitted yet.'}</p>}
           <ul className="dash-list">
-            {periodReports.slice(0, 4).map((r) => (
+            {periodReports.slice(0, 5).map((r) => (
               <li key={r.id}>
                 <Link to={`/lgu/fields/${r.field_id}`} className="dash-list-title">{r.field?.field_name ?? 'Unknown field'}</Link>
                 <span className="dash-list-meta"> · {r.submitter?.full_name ?? 'Unknown farmer'} · {new Date(r.report_date ?? r.created_at).toLocaleDateString()}</span>
-                <ReportDetails report={r} />
+                <p className="dash-list-meta mt-0.5 truncate">
+                  {[r.crop_status && (FIELD_STATUS_LABELS[r.crop_status] ?? r.crop_status), r.field_condition && label(r.field_condition), r.summary].filter(Boolean).join(' · ')}
+                </p>
               </li>
             ))}
           </ul>

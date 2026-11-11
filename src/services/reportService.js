@@ -22,7 +22,8 @@ export async function listReportsForFarmer() {
 
 async function uploadReportPhoto(fieldId, file) {
   const ext = file.name.split('.').pop()
-  const path = `reports/${fieldId}/${crypto.randomUUID()}.${ext}`
+  // The storage policy only allows uploads under the field's own folder (<fieldId>/...).
+  const path = `${fieldId}/reports/${crypto.randomUUID()}.${ext}`
   const { error } = await supabase.storage.from('media').upload(path, file)
   if (error) throw error
   return supabase.storage.from('media').getPublicUrl(path).data.publicUrl

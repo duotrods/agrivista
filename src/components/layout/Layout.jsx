@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { Navbar } from './Navbar'
+import { PublicFooter } from './PublicFooter'
 import { Sidebar } from './Sidebar'
 export function Layout() {
   const { pathname } = useLocation()
@@ -10,6 +11,8 @@ export function Layout() {
   const isAuth = ['/login', '/register', '/forgot-password', '/reset-password'].includes(pathname)
   const showSidebar = Boolean(user) && !isAuth
   const content = <>{isAuth ? <Outlet /> : <main id="main-content"><Outlet /></main>}<footer className="site-footer print:hidden"><span>AgriVista</span><span>Connecting fields. Supporting communities.</span><span>Banaybanay, Davao Oriental</span></footer></>
+  // Visitors on public pages get the full footer; sign-in pages and the app keep the slim one.
+  if (!showSidebar && !isAuth) return <div className="app-shell"><a className="skip-link" href="#main-content">Skip to content</a><Navbar /><main id="main-content"><Outlet /></main><PublicFooter /></div>
   if (!showSidebar) return <div className="app-shell"><a className="skip-link" href="#main-content">Skip to content</a><Navbar />{content}</div>
   return <div className="app-shell"><a className="skip-link" href="#main-content">Skip to content</a><div className="app-body"><Sidebar mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} /><div className="app-content"><Navbar onMenuClick={() => setMenuOpen((o) => !o)} />{content}</div></div></div>
 }

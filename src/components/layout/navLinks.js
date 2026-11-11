@@ -2,7 +2,7 @@
 export const NAV_SECTIONS = {
   farmer: [
     { title: 'General', links: [['/', 'Dashboard', 'home'], ['/fields', 'My Fields', 'fields'], ['/my-map', 'Map', 'map'], ['/notifications', 'Notifications', 'bell']] },
-    { title: 'Monitoring', links: [['/monitoring', 'Monitoring', 'chart'], ['/reports', 'Reports', 'report']] },
+    { title: 'Monitoring', links: [['/monitoring', 'Monitoring', 'chart']] },
     { title: 'Account', links: [['/profile', 'Profile', 'user'], ['/settings', 'Settings', 'settings']] },
   ],
   lgu_staff: [

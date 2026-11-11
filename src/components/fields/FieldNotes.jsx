@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { createNote, listNotesForField } from '../../services/noteService'
 
-export function FieldNotes({ fieldId }) {
+export function FieldNotes({ fieldId, readOnly = false }) {
   const { user, profile } = useAuth()
   const [notes, setNotes] = useState([])
   const [content, setContent] = useState('')
@@ -32,30 +32,32 @@ export function FieldNotes({ fieldId }) {
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-        <textarea
-          placeholder="Add a note or remark..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          required
-          className="rounded border px-3 py-2 text-sm"
-        />
-        <label className="flex items-center gap-2 text-xs text-gray-600">
-          <input
-            type="checkbox"
-            checked={isPrivate}
-            onChange={(e) => setIsPrivate(e.target.checked)}
+      {!readOnly && (
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+          <textarea
+            placeholder="Add a note or remark..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+            className="rounded border px-3 py-2 text-sm"
           />
-          Private (only visible to you)
-        </label>
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-fit rounded bg-green-700 px-3 py-1.5 text-sm text-white hover:bg-green-600 disabled:opacity-50"
-        >
-          {submitting ? 'Posting...' : 'Add Note'}
-        </button>
-      </form>
+          <label className="flex items-center gap-2 text-xs text-gray-600">
+            <input
+              type="checkbox"
+              checked={isPrivate}
+              onChange={(e) => setIsPrivate(e.target.checked)}
+            />
+            Private (only visible to you)
+          </label>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-fit rounded bg-green-700 px-3 py-1.5 text-sm text-white hover:bg-green-600 disabled:opacity-50"
+          >
+            {submitting ? 'Posting...' : 'Add Note'}
+          </button>
+        </form>
+      )}
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 

@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { GROWTH_STAGES, HEALTH_STATUSES } from '../../lib/constants'
 import { completeCycle, createObservation, listObservations } from '../../services/cropService'
 
-export function CropCycleCard({ cycle, onUpdated }) {
+export function CropCycleCard({ cycle, onUpdated, readOnly = false }) {
   const { user } = useAuth()
   const [observations, setObservations] = useState([])
   const [error, setError] = useState(null)
@@ -94,7 +94,7 @@ export function CropCycleCard({ cycle, onUpdated }) {
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
-      {cycle.status === 'ongoing' && (
+      {!readOnly && cycle.status === 'ongoing' && (
         <form onSubmit={handleCompleteHarvest} className="mt-3 flex flex-wrap items-end gap-2 border-t pt-3">
           <label className="text-xs text-gray-600">
             Harvest date
@@ -128,60 +128,63 @@ export function CropCycleCard({ cycle, onUpdated }) {
 
       <div className="mt-3 border-t pt-3">
         <p className="mb-2 text-sm font-medium">Observations</p>
-        <form onSubmit={handleLogObservation} className="flex flex-col gap-2">
-          <div className="flex flex-wrap gap-2">
-            <Select
-              aria-label="Growth stage" value={growthStage}
-              onChange={(e) => setGrowthStage(e.target.value)}
-              className="rounded border px-2 py-1 text-sm"
-            >
-              {GROWTH_STAGES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
-            <Select
-              aria-label="Health status" value={healthStatus}
-              onChange={(e) => setHealthStatus(e.target.value)}
-              className="rounded border px-2 py-1 text-sm"
-            >
-              {HEALTH_STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </Select>
-            {healthStatus === 'pest_affected' && (
-              <input
-                type="text"
-                placeholder="Pest type"
-                value={pestType}
-                onChange={(e) => setPestType(e.target.value)}
+        {!readOnly && (
+          <form onSubmit={handleLogObservation} className="flex flex-col gap-2">
+            <div className="flex flex-wrap gap-2">
+              <Select
+                aria-label="Growth stage" value={growthStage}
+                onChange={(e) => setGrowthStage(e.target.value)}
                 className="rounded border px-2 py-1 text-sm"
-              />
-            )}
-          </div>
-          <textarea
-            placeholder="Remarks (optional)"
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            className="rounded border px-2 py-1 text-sm"
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
-            className="text-xs"
-          />
-          <button
-            type="submit"
-            disabled={logging}
-            className="w-fit rounded bg-green-700 px-3 py-1.5 text-sm text-white hover:bg-green-600 disabled:opacity-50"
-          >
-            {logging ? 'Logging...' : 'Log Observation'}
-          </button>
-        </form>
+              >
+                {GROWTH_STAGES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                aria-label="Health status" value={healthStatus}
+                onChange={(e) => setHealthStatus(e.target.value)}
+                className="rounded border px-2 py-1 text-sm"
+              >
+                {HEALTH_STATUSES.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </Select>
+              {healthStatus === 'pest_affected' && (
+                <input
+                  type="text"
+                  placeholder="Pest type"
+                  value={pestType}
+                  onChange={(e) => setPestType(e.target.value)}
+                  className="rounded border px-2 py-1 text-sm"
+                />
+              )}
+            </div>
+            <textarea
+              placeholder="Remarks (optional)"
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              className="rounded border px-2 py-1 text-sm"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setPhotoFile(e.target.files?.[0] ?? null)}
+              className="text-xs"
+            />
+            <button
+              type="submit"
+              disabled={logging}
+              className="w-fit rounded bg-green-700 px-3 py-1.5 text-sm text-white hover:bg-green-600 disabled:opacity-50"
+            >
+              {logging ? 'Logging...' : 'Log Observation'}
+            </button>
+          </form>
+        )}
+        {readOnly && observations.length === 0 && <p className="text-sm text-gray-500">No observations yet.</p>}
 
         {observations.length > 0 && (
           <ul className="mt-3 flex flex-col gap-2">
