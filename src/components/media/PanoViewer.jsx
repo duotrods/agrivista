@@ -11,6 +11,8 @@ export function PanoViewer({ imageUrl, className = 'h-96 w-full rounded' }) {
       type: 'equirectangular',
       panorama: imageUrl,
       autoLoad: true,
+      // Load with CORS, matching the thumbnail, so Safari and the offline cache agree on one copy.
+      crossOrigin: 'anonymous',
     })
 
     return () => {

@@ -40,9 +40,11 @@ export default defineConfig({
             urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/public\//,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'agrivista-media-cache',
+              // v2: drops opaque copies cached earlier, which broke the 360° viewer on iPhone.
+              // Only complete (200) responses are cached, never opaque ones.
+              cacheName: 'agrivista-media-cache-v2',
               expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
-              cacheableResponse: { statuses: [0, 200] },
+              cacheableResponse: { statuses: [200] },
             },
           },
           {

@@ -67,7 +67,7 @@ export function MediaGallery({ media }) {
                 onClick={() => setActivePanoUrl(item.file_url)}
                 className="relative h-32 w-full overflow-hidden rounded"
               >
-                <img src={item.file_url} alt={item.caption ?? 'Panorama'} className="h-full w-full object-cover" />
+                <img src={item.file_url} crossOrigin="anonymous" alt={item.caption ?? 'Panorama'} className="h-full w-full object-cover" />
                 <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 text-xs text-white">
                   360°
                 </span>
