@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PeriodFilter } from '../../components/dashboard/PeriodFilter'
 import { StatCard } from '../../components/dashboard/StatCard'
 import { ToolbarIcon } from '../../components/dashboard/ToolbarIcon'
+import { ExportMenu } from '../../components/common/ExportMenu'
 import { Select } from '../../components/common/Select'
 import { FIELD_STATUSES, FIELD_STATUS_LABELS, HEALTH_STATUSES, PUROKS } from '../../lib/constants'
 import { MONTHS, inPeriod as inPeriodOf, periodYears } from '../../lib/period'
@@ -20,11 +21,6 @@ function tally(items, keyFn) {
     counts.set(key, (counts.get(key) ?? 0) + 1)
   }
   return counts
-}
-
-function csvCell(value) {
-  const text = String(value ?? '')
-  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text
 }
 
 export function AgriculturalReports() {
@@ -107,21 +103,13 @@ export function AgriculturalReports() {
     ]
   }, [view])
 
-  function handleExport() {
-    const lines = [csvCell('Period'), csvCell(periodText), '', csvCell('Summary'), 'Measure,Total']
-    for (const [name, value] of cards) lines.push([name, value].map(csvCell).join(','))
-    lines.push('')
-    for (const section of sections) {
-      lines.push(csvCell(section.title), section.head.map(csvCell).join(','))
-      for (const row of section.rows) lines.push(row.map(csvCell).join(','))
-      lines.push('')
+  function buildDocument() {
+    return {
+      title: 'AgriVista — Agricultural Report',
+      subtitle: `Period: ${periodText} · Generated ${new Date().toLocaleDateString()}`,
+      filename: `agrivista-agricultural-report-${new Date().toISOString().slice(0, 10)}`,
+      sections: [{ title: 'Summary', head: ['Measure', 'Total'], rows: cards.map(([name, value]) => [name, value]) }, ...sections],
     }
-    const url = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' }))
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `agrivista-agricultural-report-${new Date().toISOString().slice(0, 10)}.csv`
-    link.click()
-    URL.revokeObjectURL(url)
   }
 
   return (
@@ -142,7 +130,7 @@ export function AgriculturalReports() {
           </div>
           {purok && !month && !year && <button type="button" onClick={() => setPurok('')} className="tb-btn">Clear</button>}
           <button type="button" onClick={() => window.print()} disabled={!view} className="tb-btn"><ToolbarIcon name="print" />Print</button>
-          <button type="button" onClick={handleExport} disabled={!view} className="tb-btn"><ToolbarIcon name="download" />Export CSV</button>
+          <ExportMenu getDocument={buildDocument} formats={['pdf', 'docx', 'csv']} disabled={!view} />
         </div>
       </div>
       <p className="mb-4 hidden text-sm print:block">Agricultural report · {periodText} · generated {new Date().toLocaleDateString()}</p>

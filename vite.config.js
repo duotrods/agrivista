@@ -22,6 +22,9 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // PDF and Word export libraries are large and only needed on download, so they are
+        // fetched on demand instead of being part of the offline install.
+        globIgnores: ['**/jspdf*', '**/html2canvas*', '**/purify*', '**/index.es-*', '**/dist-*'],
         runtimeCaching: [
           {
             // Supabase REST data (fields, media records, notes, etc.): prefer

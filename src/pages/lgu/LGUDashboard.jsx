@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ARFieldView } from '../../components/ar/ARFieldView'
+import { ExportMenu } from '../../components/common/ExportMenu'
 import { PeriodFilter } from '../../components/dashboard/PeriodFilter'
 import { ToolbarIcon } from '../../components/dashboard/ToolbarIcon'
 import { StatCard } from '../../components/dashboard/StatCard'
-import { FIELD_STATUS_LABELS } from '../../lib/constants'
+import { FIELD_STATUSES, FIELD_STATUS_LABELS } from '../../lib/constants'
 import { isReadyToHarvest } from '../../lib/helpers'
-import { inPeriod as inPeriodOf, periodYears } from '../../lib/period'
+import { conditionCounts } from '../../lib/fieldConditions'
+import { MONTHS, inPeriod as inPeriodOf, periodYears } from '../../lib/period'
 import { listFarmerProfiles } from '../../services/adminService'
 import { listAllFields } from '../../services/fieldService'
 import { listAllReports } from '../../services/reportService'
@@ -52,6 +54,39 @@ export function LGUDashboard() {
   const totalHectares = periodFields.reduce((sum, f) => sum + (f.area_hectares ?? 0), 0).toFixed(1)
   const pendingCount = periodFields.filter((f) => !f.is_verified && f.review_status === 'pending').length
 
+  function buildDocument() {
+    const periodText = [month && MONTHS[Number(month) - 1], year].filter(Boolean).join(' ') || 'All data'
+    const tallyBy = (key) => Object.entries(periodFields.reduce((acc, f) => ({ ...acc, [f[key] ?? 'Unspecified']: (acc[f[key] ?? 'Unspecified'] ?? 0) + 1 }), {}))
+    return {
+      title: 'AgriVista — Dashboard Report',
+      subtitle: `Period: ${periodText} · Generated ${new Date().toLocaleDateString()}`,
+      filename: `agrivista-dashboard-${new Date().toISOString().slice(0, 10)}`,
+      sections: [
+        { title: 'Summary', head: ['Measure', 'Total'], rows: [
+          ['Total rice fields', periodFields.length],
+          ['Approved fields', approvedCount],
+          ['Pending verification', pendingCount],
+          ['Total farmers', periodFarmers.length],
+          ['Total hectares', totalHectares],
+          ['Planted & growing', count('planted') + count('growing')],
+          ['Ready to harvest', readyCount],
+          ['Reports awaiting validation', awaitingCount],
+        ] },
+        { title: 'Fields by purok', head: ['Purok', 'Fields'], rows: tallyBy('purok').sort(([a], [b]) => a.localeCompare(b)) },
+        { title: 'Status distribution', head: ['Crop status', 'Fields'], rows: FIELD_STATUSES.map((s) => [FIELD_STATUS_LABELS[s], count(s)]) },
+        { title: 'Field conditions', note: 'Latest report per field', head: ['Condition', 'Fields'], rows: conditionCounts(periodReports).map((c) => [c.label, c.value]) },
+        { title: 'Recent monitoring reports', head: ['Date', 'Field', 'Farmer', 'Crop status', 'Condition', 'Observation'], rows: periodReports.slice(0, 10).map((r) => [
+          new Date(r.report_date ?? r.created_at).toLocaleDateString(),
+          r.field?.field_name ?? 'Unknown field',
+          r.submitter?.full_name ?? 'Unknown farmer',
+          r.crop_status ? (FIELD_STATUS_LABELS[r.crop_status] ?? r.crop_status) : '',
+          r.field_condition ? label(r.field_condition) : '',
+          r.summary,
+        ]) },
+      ],
+    }
+  }
+
   return (
     <div className="page-container">
       <div className="dash-toolbar print:hidden">
@@ -63,6 +98,7 @@ export function LGUDashboard() {
           <PeriodFilter month={month} year={year} years={years} onMonth={setMonth} onYear={setYear} />
           <button type="button" onClick={() => setShowAR(true)} className="tb-btn"><ToolbarIcon name="ar" />View in AR</button>
           <button type="button" onClick={() => window.print()} className="tb-btn"><ToolbarIcon name="print" />Print</button>
+          <ExportMenu getDocument={buildDocument} />
         </div>
       </div>
       <h1 className="mb-4 hidden text-2xl font-semibold text-green-800 print:block">AgriVista — Rice Field Report</h1>
