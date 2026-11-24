@@ -1,39 +1,42 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { InstallPrompt } from './components/common/InstallPrompt'
 import { RootRoute } from './components/common/RootRoute'
 import { ProtectedRoute } from './components/common/ProtectedRoute'
 import { Layout } from './components/layout/Layout'
-import { ForgotPasswordPage } from './pages/auth/ForgotPasswordPage'
-import { LoginPage } from './pages/auth/LoginPage'
-import { RegisterPage } from './pages/auth/RegisterPage'
-import { ResetPasswordPage } from './pages/auth/ResetPasswordPage'
-import { FarmerMap } from './pages/farmer/FarmerMap'
-import { Monitoring } from './pages/farmer/Monitoring'
-import { MyFields } from './pages/farmer/MyFields'
-import { CropMonitoring } from './pages/lgu/CropMonitoring'
-import { LGUMap } from './pages/lgu/LGUMap'
-import { RiceFields } from './pages/lgu/RiceFields'
-import { Profile } from './pages/Profile'
-import { FieldDetail } from './pages/farmer/FieldDetail'
-import { AgriculturalReports } from './pages/lgu/AgriculturalReports'
-import { ActivityLogs } from './pages/lgu/ActivityLogs'
-import { AdminUsers } from './pages/lgu/AdminUsers'
-import { Announcements } from './pages/lgu/Announcements'
-import { LGUFieldView } from './pages/lgu/LGUFieldView'
-import { Reports } from './pages/lgu/Reports'
-import { Settings } from './pages/Settings'
-import { VerifyFields } from './pages/lgu/VerifyFields'
-import { Notifications } from './pages/Notifications'
-import { ManageUsers } from './pages/admin/ManageUsers'
-import { AboutPage } from './pages/public/AboutPage'
-import { CropStatusPage } from './pages/public/CropStatusPage'
-import { PublicMapPage } from './pages/public/PublicMapPage'
-import { StatisticsPage } from './pages/public/StatisticsPage'
+
+const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage').then((m) => ({ default: m.ForgotPasswordPage })))
+const LoginPage = lazy(() => import('./pages/auth/LoginPage').then((m) => ({ default: m.LoginPage })))
+const RegisterPage = lazy(() => import('./pages/auth/RegisterPage').then((m) => ({ default: m.RegisterPage })))
+const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage').then((m) => ({ default: m.ResetPasswordPage })))
+const FarmerMap = lazy(() => import('./pages/farmer/FarmerMap').then((m) => ({ default: m.FarmerMap })))
+const Monitoring = lazy(() => import('./pages/farmer/Monitoring').then((m) => ({ default: m.Monitoring })))
+const MyFields = lazy(() => import('./pages/farmer/MyFields').then((m) => ({ default: m.MyFields })))
+const CropMonitoring = lazy(() => import('./pages/lgu/CropMonitoring').then((m) => ({ default: m.CropMonitoring })))
+const LGUMap = lazy(() => import('./pages/lgu/LGUMap').then((m) => ({ default: m.LGUMap })))
+const RiceFields = lazy(() => import('./pages/lgu/RiceFields').then((m) => ({ default: m.RiceFields })))
+const Profile = lazy(() => import('./pages/Profile').then((m) => ({ default: m.Profile })))
+const FieldDetail = lazy(() => import('./pages/farmer/FieldDetail').then((m) => ({ default: m.FieldDetail })))
+const AgriculturalReports = lazy(() => import('./pages/lgu/AgriculturalReports').then((m) => ({ default: m.AgriculturalReports })))
+const ActivityLogs = lazy(() => import('./pages/lgu/ActivityLogs').then((m) => ({ default: m.ActivityLogs })))
+const AdminUsers = lazy(() => import('./pages/lgu/AdminUsers').then((m) => ({ default: m.AdminUsers })))
+const Announcements = lazy(() => import('./pages/lgu/Announcements').then((m) => ({ default: m.Announcements })))
+const LGUFieldView = lazy(() => import('./pages/lgu/LGUFieldView').then((m) => ({ default: m.LGUFieldView })))
+const Reports = lazy(() => import('./pages/lgu/Reports').then((m) => ({ default: m.Reports })))
+const Settings = lazy(() => import('./pages/Settings').then((m) => ({ default: m.Settings })))
+const VerifyFields = lazy(() => import('./pages/lgu/VerifyFields').then((m) => ({ default: m.VerifyFields })))
+const Notifications = lazy(() => import('./pages/Notifications').then((m) => ({ default: m.Notifications })))
+const ManageUsers = lazy(() => import('./pages/admin/ManageUsers').then((m) => ({ default: m.ManageUsers })))
+const AboutPage = lazy(() => import('./pages/public/AboutPage').then((m) => ({ default: m.AboutPage })))
+const CropStatusPage = lazy(() => import('./pages/public/CropStatusPage').then((m) => ({ default: m.CropStatusPage })))
+const PublicMapPage = lazy(() => import('./pages/public/PublicMapPage').then((m) => ({ default: m.PublicMapPage })))
+const StatisticsPage = lazy(() => import('./pages/public/StatisticsPage').then((m) => ({ default: m.StatisticsPage })))
 
 function App() {
   return (
     <>
       <InstallPrompt />
+      <Suspense fallback={null}>
       <Routes>
       <Route element={<Layout />}>
         <Route path="/login" element={<LoginPage />} />
@@ -203,6 +206,7 @@ function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
       </Routes>
+      </Suspense>
     </>
   )
 }
