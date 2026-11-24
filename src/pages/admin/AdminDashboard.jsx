@@ -1,9 +1,15 @@
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
-import { listLGUAccountsForApproval, toggleProfileActive } from '../../services/adminService'
+import { ConfirmDialog } from '../../components/common/ConfirmDialog'
+import { useAuth } from '../../hooks/useAuth'
+import { deleteUser, listLGUAccountsForApproval, logActivity, toggleProfileActive } from '../../services/adminService'
 
 export function AdminDashboard() {
+  const { user } = useAuth()
   const [accounts, setAccounts] = useState([])
+  const [rejecting, setRejecting] = useState(null)
+  const [busy, setBusy] = useState(false)
+  const [notice, setNotice] = useState(null)
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -19,6 +25,8 @@ export function AdminDashboard() {
     try {
       await toggleProfileActive(id, true)
       setAccounts((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: true } : a)))
+      logActivity({ userId: user.id, action: 'approved_lgu_staff', resourceType: 'user', resourceId: id })
+      setNotice('LGU staff account approved. They can log in now.')
     } catch (err) {
       setError(err.message)
     }
@@ -29,8 +37,24 @@ export function AdminDashboard() {
     try {
       await toggleProfileActive(id, false)
       setAccounts((prev) => prev.map((a) => (a.id === id ? { ...a, is_active: false } : a)))
+      logActivity({ userId: user.id, action: 'revoked_lgu_staff', resourceType: 'user', resourceId: id })
     } catch (err) {
       setError(err.message)
+    }
+  }
+
+  async function handleReject() {
+    setBusy(true)
+    setError(null)
+    try {
+      await deleteUser(rejecting.id, { deletedBy: user.id, email: rejecting.email, role: 'lgu_staff' })
+      setAccounts((prev) => prev.filter((a) => a.id !== rejecting.id))
+      setNotice('LGU staff registration rejected and removed.')
+      setRejecting(null)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -44,6 +68,17 @@ export function AdminDashboard() {
         description="Review and approve LGU Staff registrations for AgriVista."
       />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
+      {notice && <p role="status" className="dash-note">{notice}</p>}
+      <ConfirmDialog
+        open={Boolean(rejecting)}
+        danger
+        busy={busy}
+        title="Reject this registration?"
+        message={rejecting ? `${rejecting.full_name ?? rejecting.email} will be removed and will not be able to log in. This cannot be undone.` : ''}
+        confirmLabel="Reject"
+        onConfirm={handleReject}
+        onCancel={() => setRejecting(null)}
+      />
 
       <h2 className="mb-2 text-lg font-medium">
         Pending approval {pending.length > 0 && `(${pending.length})`}
@@ -89,13 +124,22 @@ export function AdminDashboard() {
                 </td>
                 <td data-label="Registered" className="p-2">{new Date(a.created_at).toLocaleDateString()}</td>
                 <td data-label="Action" className="p-2">
-                  <button
-                    type="button"
-                    onClick={() => handleApprove(a.id)}
-                    className="rounded bg-green-700 px-2 py-1 text-xs text-white hover:bg-green-600"
-                  >
-                    Approve
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(a.id)}
+                      className="rounded bg-green-700 px-2 py-1 text-xs text-white hover:bg-green-600"
+                    >
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRejecting(a)}
+                      className="rounded border border-red-600 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
+                    >
+                      Reject
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

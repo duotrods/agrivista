@@ -1,0 +1,116 @@
+Table,Column,Data type,Key,Null?,Default,Description
+profiles,id,uuid,"PK, FK",No,—,Same as the Supabase Auth user id. References auth.users(id); deleted with the user (cascade).
+profiles,email,text,UK,No,—,Login email address. Must be unique.
+profiles,full_name,text,,Yes,—,The person's full name.
+profiles,role,text,,No,'farmer',"Account type. Allowed: farmer, lgu_staff, admin."
+profiles,barangay,text,,Yes,'Caganganan',Barangay of the user. Fixed to Caganganan for new accounts.
+profiles,purok,text,,Yes,—,"Sub-location (purok). Allowed: Purok Malinawon, Purok Malipayon, Purok San Francisco, Purok Anahaw, Purok Rose Mabuhay, Purok Liko Liko, Purok Awa-aw."
+profiles,is_active,boolean,,No,true,False means the account is disabled. New LGU staff accounts start disabled until approved.
+profiles,created_at,timestamptz,,No,now(),When the account was created.
+rice_fields,id,uuid,PK,No,gen_random_uuid(),Unique field id.
+rice_fields,farmer_id,uuid,FK,No,—,Owner of the record. References profiles(id); the field is deleted with its farmer (cascade).
+rice_fields,field_name,text,,No,—,Name the farmer gave the field.
+rice_fields,latitude,"decimal(10,8)",,No,—,GPS latitude of the field.
+rice_fields,longitude,"decimal(11,8)",,No,—,GPS longitude of the field.
+rice_fields,barangay,text,,Yes,'Caganganan',Barangay of the field.
+rice_fields,purok,text,,Yes,—,"Purok where the field is. Allowed: Purok Malinawon, Purok Malipayon, Purok San Francisco, Purok Anahaw, Purok Rose Mabuhay, Purok Liko Liko, Purok Awa-aw."
+rice_fields,owner_name,text,,Yes,—,Name of the land owner.
+rice_fields,maintainer_name,text,,Yes,—,Name of the person who maintains the field.
+rice_fields,area_hectares,"decimal(6,2)",,Yes,—,Field area in hectares. Recalculated when a boundary is saved.
+rice_fields,seed_type,text,,Yes,—,"Seed type. Allowed: inbred, hybrid."
+rice_fields,crop_variety,text,,Yes,—,Rice variety planted.
+rice_fields,soil_type,text,,Yes,—,Soil type of the field.
+rice_fields,irrigation_type,text,,Yes,—,How the field is irrigated.
+rice_fields,planting_date,date,,Yes,—,Date the crop was planted.
+rice_fields,expected_harvest,date,,Yes,—,Estimated harvest date.
+rice_fields,polygon_coords,jsonb,,Yes,—,Boundary of the field as a list of map points.
+rice_fields,field_status,text,,No,'fallow',"Current crop stage. Allowed: fallow, land_prep, planted, growing, harvested."
+rice_fields,is_verified,boolean,,No,false,"True once LGU staff approve the field. Only approved fields appear in public data. Set by the server, not by the app."
+rice_fields,verified_by,uuid,FK,Yes,—,LGU staff member who approved the field. References profiles(id); cleared if that user is deleted.
+rice_fields,verified_at,timestamptz,,Yes,—,When the field was approved.
+rice_fields,review_status,text,,No,'pending',"Outcome of the LGU review while not approved. Allowed: pending, needs_correction, rejected."
+rice_fields,review_note,text,,Yes,—,LGU explanation for a rejection or correction request. Required for those outcomes.
+rice_fields,updated_at,timestamptz,,No,now(),Last change. Set by the server and used to stop approval of an out-of-date version.
+rice_fields,created_at,timestamptz,,No,now(),When the field was registered.
+field_media,id,uuid,PK,No,gen_random_uuid(),Unique media id.
+field_media,field_id,uuid,FK,No,—,Field the file belongs to. References rice_fields(id); deleted with the field.
+field_media,file_url,text,,No,—,Public URL of the file in storage.
+field_media,uploaded_by,uuid,FK,Yes,—,Who uploaded it. References profiles(id); cleared if that user is deleted.
+field_media,media_type,text,,No,'photo',"Allowed: photo, panorama_360, video, drone_photo."
+field_media,caption,text,,Yes,—,Optional caption.
+field_media,field_condition,text,,Yes,—,"Condition shown in a 360° panorama. Allowed: unplanted, planted, growth_status, ready_to_harvest."
+field_media,created_at,timestamptz,,No,now(),When it was uploaded.
+field_status_logs,id,uuid,PK,No,gen_random_uuid(),Unique log id.
+field_status_logs,field_id,uuid,FK,No,—,Field that changed. References rice_fields(id); deleted with the field.
+field_status_logs,changed_by,uuid,FK,Yes,—,Who made the change. References profiles(id); cleared if that user is deleted.
+field_status_logs,old_status,text,,Yes,—,Status before the change.
+field_status_logs,new_status,text,,No,—,Status after the change.
+field_status_logs,remarks,text,,Yes,—,The observation the user gave for the change.
+field_status_logs,created_at,timestamptz,,No,now(),When the status changed.
+field_notes,id,uuid,PK,No,gen_random_uuid(),Unique note id.
+field_notes,field_id,uuid,FK,No,—,Field the note is about. References rice_fields(id); deleted with the field.
+field_notes,author_id,uuid,FK,Yes,—,Who wrote it. References profiles(id); cleared if that user is deleted.
+field_notes,content,text,,No,—,The note text.
+field_notes,is_private,boolean,,No,false,True means only the author can see it.
+field_notes,created_at,timestamptz,,No,now(),When it was written.
+field_reports,id,uuid,PK,No,gen_random_uuid(),Unique report id.
+field_reports,field_id,uuid,FK,No,—,Field the report is about. References rice_fields(id); deleted with the field.
+field_reports,submitted_by,uuid,FK,Yes,—,Farmer who sent it. References profiles(id); cleared if that user is deleted.
+field_reports,report_date,date,,Yes,—,Date the report covers.
+field_reports,crop_status,text,,Yes,—,"Crop stage reported. Allowed: fallow, land_prep, planted, growing, harvested."
+field_reports,field_condition,text,,Yes,—,"Condition of the field. Allowed: healthy, pest_affected, diseased, drought_stressed."
+field_reports,summary,text,,No,—,The farmer's observation.
+field_reports,harvest_info,text,,Yes,—,Optional harvest information.
+field_reports,photo_url,text,,Yes,—,"Optional photo, stored in Supabase Storage."
+field_reports,status,text,,No,'submitted',"Allowed: submitted, reviewed (validated by the LGU)."
+field_reports,reviewed_by,uuid,FK,Yes,—,LGU staff member who validated it. References profiles(id); cleared if that user is deleted.
+field_reports,reviewed_at,timestamptz,,Yes,—,When it was validated.
+field_reports,created_at,timestamptz,,No,now(),When it was submitted.
+crop_cycles,id,uuid,PK,No,gen_random_uuid(),Unique cycle id.
+crop_cycles,field_id,uuid,FK,No,—,Field being planted. References rice_fields(id); deleted with the field.
+crop_cycles,season,text,,No,—,"Allowed: wet, dry."
+crop_cycles,year,integer,,No,—,Year of the season.
+crop_cycles,crop_variety,text,,Yes,—,Variety planted in this cycle.
+crop_cycles,planting_date,date,,No,—,Date planted.
+crop_cycles,harvest_date,date,,Yes,—,Date harvested.
+crop_cycles,yield_kg,"decimal(10,2)",,Yes,—,Harvest yield in kilograms.
+crop_cycles,status,text,,No,'ongoing',"Allowed: ongoing, completed, failed."
+crop_cycles,notes,text,,Yes,—,Optional notes.
+crop_cycles,created_at,timestamptz,,No,now(),When the cycle was started.
+crop_observations,id,uuid,PK,No,gen_random_uuid(),Unique observation id.
+crop_observations,cycle_id,uuid,FK,No,—,Crop cycle observed. References crop_cycles(id); deleted with the cycle.
+crop_observations,observed_by,uuid,FK,Yes,—,Who recorded it. References profiles(id); cleared if that user is deleted.
+crop_observations,observation_date,date,,No,current_date,Date of the observation.
+crop_observations,growth_stage,text,,No,—,"Allowed: seedling, tillering, booting, heading, ripening."
+crop_observations,health_status,text,,No,'healthy',"Allowed: healthy, pest_affected, diseased, drought_stressed."
+crop_observations,pest_type,text,,Yes,—,"Type of pest, when pest affected."
+crop_observations,remarks,text,,Yes,—,Optional remarks.
+crop_observations,photo_url,text,,Yes,—,Optional photo.
+crop_observations,created_at,timestamptz,,No,now(),When it was recorded.
+notifications,id,uuid,PK,No,gen_random_uuid(),Unique notification id.
+notifications,user_id,uuid,FK,No,—,Recipient. References profiles(id); deleted with the user.
+notifications,title,text,,No,—,Short title.
+notifications,message,text,,Yes,—,Longer message.
+notifications,type,text,,No,'info',"Allowed: info, warning, success, reminder."
+notifications,is_read,boolean,,No,false,Whether the user has opened it.
+notifications,link,text,,Yes,—,In-app page the notification points to.
+notifications,created_at,timestamptz,,No,now(),When it was created.
+announcements,id,uuid,PK,No,gen_random_uuid(),Unique announcement id.
+announcements,title,text,,No,—,Announcement title.
+announcements,message,text,,No,—,Announcement text.
+announcements,target_purok,text,,Yes,—,Purok it is addressed to. Empty means every farmer.
+announcements,created_by,uuid,FK,Yes,—,LGU staff member who sent it. References profiles(id); cleared if that user is deleted.
+announcements,created_at,timestamptz,,No,now(),When it was sent.
+activity_logs,id,uuid,PK,No,gen_random_uuid(),Unique log id.
+activity_logs,user_id,uuid,FK,Yes,—,Who did it. References profiles(id); cleared if that user is deleted.
+activity_logs,action,text,,No,—,"What happened, for example approved_field."
+activity_logs,resource_type,text,,Yes,—,"Kind of record affected, for example field."
+activity_logs,resource_id,uuid,,Yes,—,Id of the record affected.
+activity_logs,details,jsonb,,Yes,—,Extra details about the action.
+activity_logs,created_at,timestamptz,,No,now(),When it happened.
+system_settings,id,uuid,PK,No,gen_random_uuid(),Unique setting id.
+system_settings,key,text,UK,No,—,Setting name. Must be unique.
+system_settings,value,jsonb,,No,—,Setting value.
+system_settings,description,text,,Yes,—,What the setting is for.
+system_settings,updated_by,uuid,FK,Yes,—,Who last changed it. References profiles(id); cleared if that user is deleted.
+system_settings,updated_at,timestamptz,,No,now(),When it was last changed.

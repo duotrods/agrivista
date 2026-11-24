@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AgriVista ERD</title>
+<style>
+  body { margin: 0; font-family: 'Avenir Next', 'Segoe UI', sans-serif; background: #f6f7f3; color: #263e31; }
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 28px; background: #fff; border-bottom: 1px solid #e1e6dc; }
+  h1 { margin: 0; font-size: 20px; }
+  p { margin: 2px 0 0; font-size: 13px; color: #6f7d72; }
+  button { height: 34px; padding: 0 14px; border: 1px solid #d3dccd; border-radius: 8px; background: #fff; font: inherit; font-size: 13px; font-weight: 600; color: #265c45; cursor: pointer; }
+  button:hover { background: #f1f7ec; }
+  main { padding: 24px; overflow: auto; }
+  #diagram { min-width: 1400px; background: #fff; border: 1px solid #e1e6dc; border-radius: 12px; padding: 24px; }
+  #diagram svg { max-width: none; }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>AgriVista database: entity-relationship diagram</h1><p>12 tables plus Supabase Auth, from migrations 0001 to 0025.</p></div>
+  <div><button id="svg">Download SVG</button> <button id="png">Download PNG</button></div>
+</header>
+<main><div id="diagram"><pre class="mermaid">
+erDiagram
+    AUTH_USERS ||--|| PROFILES : "signs up as (id)"
+
+    PROFILES ||--o{ RICE_FIELDS : "owns (farmer_id)"
+    PROFILES |o--o{ RICE_FIELDS : "approves (verified_by)"
+    PROFILES ||--o{ NOTIFICATIONS : "receives (user_id)"
+    PROFILES |o--o{ ACTIVITY_LOGS : "performs (user_id)"
+    PROFILES |o--o{ ANNOUNCEMENTS : "sends (created_by)"
+    PROFILES |o--o{ SYSTEM_SETTINGS : "updates (updated_by)"
+    PROFILES |o--o{ FIELD_MEDIA : "uploads (uploaded_by)"
+    PROFILES |o--o{ FIELD_STATUS_LOGS : "changes status (changed_by)"
+    PROFILES |o--o{ FIELD_NOTES : "writes (author_id)"
+    PROFILES |o--o{ FIELD_REPORTS : "submits (submitted_by)"
+    PROFILES |o--o{ FIELD_REPORTS : "validates (reviewed_by)"
+    PROFILES |o--o{ CROP_OBSERVATIONS : "records (observed_by)"
+
+    RICE_FIELDS ||--o{ FIELD_MEDIA : "has"
+    RICE_FIELDS ||--o{ FIELD_STATUS_LOGS : "has history"
+    RICE_FIELDS ||--o{ FIELD_NOTES : "has"
+    RICE_FIELDS ||--o{ FIELD_REPORTS : "has"
+    RICE_FIELDS ||--o{ CROP_CYCLES : "has seasons"
+    CROP_CYCLES ||--o{ CROP_OBSERVATIONS : "has"
+
+    AUTH_USERS {
+        uuid id PK
+    }
+
+    PROFILES {
+        uuid id PK, FK
+        text email UK
+        text full_name
+        text role "farmer, lgu_staff, admin"
+        text barangay
+        text purok
+        boolean is_active
+        timestamptz created_at
+    }
+
+    RICE_FIELDS {
+        uuid id PK
+        uuid farmer_id FK
+        text field_name
+        decimal latitude
+        decimal longitude
+        text barangay
+        text purok
+        text owner_name
+        text maintainer_name
+        decimal area_hectares
+        text seed_type "inbred, hybrid"
+        text crop_variety
+        text soil_type
+        text irrigation_type
+        date planting_date
+        date expected_harvest
+        jsonb polygon_coords
+        text field_status "fallow to harvested"
+        boolean is_verified
+        uuid verified_by FK
+        timestamptz verified_at
+        text review_status "pending, needs_correction, rejected"
+        text review_note
+        timestamptz updated_at
+        timestamptz created_at
+    }
+
+    FIELD_MEDIA {
+        uuid id PK
+        uuid field_id FK
+        uuid uploaded_by FK
+        text file_url
+        text media_type "photo, panorama_360, video, drone_photo"
+        text caption
+        text field_condition
+        timestamptz created_at
+    }
+
+    FIELD_STATUS_LOGS {
+        uuid id PK
+        uuid field_id FK
+        uuid changed_by FK
+        text old_status
+        text new_status
+        text remarks
+        timestamptz created_at
+    }
+
+    FIELD_NOTES {
+        uuid id PK
+        uuid field_id FK
+        uuid author_id FK
+        text content
+        boolean is_private
+        timestamptz created_at
+    }
+
+    FIELD_REPORTS {
+        uuid id PK
+        uuid field_id FK
+        uuid submitted_by FK
+        uuid reviewed_by FK
+        date report_date
+        text crop_status
+        text field_condition "healthy, pest_affected, diseased, drought_stressed"
+        text summary
+        text harvest_info
+        text photo_url
+        text status "submitted, reviewed"
+        timestamptz reviewed_at
+        timestamptz created_at
+    }
+
+    CROP_CYCLES {
+        uuid id PK
+        uuid field_id FK
+        text season "wet, dry"
+        integer year
+        text crop_variety
+        date planting_date
+        date harvest_date
+        decimal yield_kg
+        text status "ongoing, completed, failed"
+        text notes
+        timestamptz created_at
+    }
+
+    CROP_OBSERVATIONS {
+        uuid id PK
+        uuid cycle_id FK
+        uuid observed_by FK
+        date observation_date
+        text growth_stage "seedling to ripening"
+        text health_status
+        text pest_type
+        text remarks
+        text photo_url
+        timestamptz created_at
+    }
+
+    NOTIFICATIONS {
+        uuid id PK
+        uuid user_id FK
+        text title
+        text message
+        text type "info, warning, success, reminder"
+        boolean is_read
+        text link
+        timestamptz created_at
+    }
+
+    ANNOUNCEMENTS {
+        uuid id PK
+        uuid created_by FK
+        text title
+        text message
+        text target_purok
+        timestamptz created_at
+    }
+
+    ACTIVITY_LOGS {
+        uuid id PK
+        uuid user_id FK
+        text action
+        text resource_type
+        uuid resource_id
+        jsonb details
+        timestamptz created_at
+    }
+
+    SYSTEM_SETTINGS {
+        uuid id PK
+        text key UK
+        jsonb value
+        text description
+        uuid updated_by FK
+        timestamptz updated_at
+    }
+
+</pre></div></main>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs'
+  mermaid.initialize({ startOnLoad: false, theme: 'neutral', er: { useMaxWidth: false } })
+  await mermaid.run({ querySelector: '.mermaid' })
+  const svgEl = () => document.querySelector('#diagram svg')
+  function download(name, href) { const a = document.createElement('a'); a.href = href; a.download = name; a.click() }
+  document.getElementById('svg').onclick = () => {
+    const xml = new XMLSerializer().serializeToString(svgEl())
+    download('agrivista-erd.svg', URL.createObjectURL(new Blob([xml], { type: 'image/svg+xml' })))
+  }
+  document.getElementById('png').onclick = () => {
+    const svg = svgEl(); const box = svg.getBoundingClientRect(); const scale = 2
+    const xml = new XMLSerializer().serializeToString(svg)
+    const img = new Image()
+    img.onload = () => {
+      const c = document.createElement('canvas'); c.width = box.width * scale; c.height = box.height * scale
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height); ctx.drawImage(img, 0, 0, c.width, c.height)
+      download('agrivista-erd.png', c.toDataURL('image/png'))
+    }
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml)
+  }
+</script>
+</body>
+</html>

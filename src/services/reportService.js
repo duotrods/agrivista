@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import { logActivity } from './adminService'
+import { createNotification } from './notificationService'
 
 export async function listReportsForField(fieldId) {
   const { data, error } = await supabase
@@ -64,8 +65,19 @@ export async function markReportReviewed(reportId, reviewedBy) {
     .from('field_reports')
     .update({ status: 'reviewed', reviewed_by: reviewedBy, reviewed_at: new Date().toISOString() })
     .eq('id', reportId)
-    .select()
+    .select('*, field:rice_fields(field_name)')
     .single()
   if (error) throw error
-  return data
+  const { field, ...report } = data
+  // Let the farmer know. A failed notification must not undo the validation.
+  if (report.submitted_by) {
+    createNotification({
+      userId: report.submitted_by,
+      title: 'Report validated',
+      message: `Your monitoring report for "${field?.field_name ?? 'your field'}" was validated by LGU staff.`,
+      type: 'success',
+      link: '/monitoring',
+    }).catch(() => {})
+  }
+  return report
 }

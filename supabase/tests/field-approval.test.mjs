@@ -292,6 +292,46 @@ test('LGU approval controls Community visibility', async (t) => {
     assert.equal((await db.query('select count(*)::int as n from profiles where id = $1', [otherFarmer])).rows[0].n, 0)
   })
 
+  await t.test('LGU staff registration requests start pending and only an admin can approve or reject them', async () => {
+    const admin = '66666666-6666-4666-8666-666666666666'
+    const pendingA = '77777777-7777-4777-8777-777777777777'
+    const pendingB = '88888888-8888-4888-8888-888888888888'
+    await db.exec('reset role')
+    await db.query('insert into auth.users (id, email) values ($1, $2)', [admin, 'admin2@example.invalid'])
+    await db.query("update profiles set role = 'admin' where id = $1", [admin])
+    for (const id of [pendingA, pendingB]) {
+      await db.query(`insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, '{"role":"lgu_staff"}')`, [id, `${id}@example.invalid`])
+    }
+    const activeOf = async (id) => (await db.query('select is_active from profiles where id = $1', [id])).rows[0]?.is_active
+
+    // Submission: a new LGU staff sign-up is created inactive.
+    assert.equal(await activeOf(pendingA), false)
+
+    // The requester cannot approve themselves, and other LGU staff cannot approve them either.
+    await asUser(pendingA)
+    await db.query('update profiles set is_active = true where id = $1', [pendingA])
+    await asUser(staff)
+    await db.query('update profiles set is_active = true where id = $1', [pendingA])
+    await db.exec('reset role')
+    assert.equal(await activeOf(pendingA), false)
+
+    // The admin sees the request and approves it.
+    await asUser(admin)
+    const requests = (await db.query('select id, is_active from admin_list_lgu_accounts()')).rows
+    assert.ok(requests.some((r) => r.id === pendingA && r.is_active === false))
+    await db.query('update profiles set is_active = true where id = $1', [pendingA])
+    await db.exec('reset role')
+    assert.equal(await activeOf(pendingA), true)
+
+    // Rejection: only the admin can remove a pending request.
+    await asUser(staff)
+    await assert.rejects(db.query('select admin_delete_user($1)', [pendingB]), /Not authorized/)
+    await asUser(admin)
+    await db.query('select admin_delete_user($1)', [pendingB])
+    await db.exec('reset role')
+    assert.equal(await activeOf(pendingB), undefined)
+  })
+
   await t.test('deleting a user keeps their history and clears the reference', async () => {
     await db.exec('reset role')
     await db.query("insert into activity_logs (user_id, action) values ($1, 'approved_field')", [staff])
