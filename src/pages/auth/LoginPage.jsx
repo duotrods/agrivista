@@ -2,7 +2,7 @@ import { AuthShell } from '../../components/layout/AuthShell'
 import { PasswordInput } from '../../components/common/PasswordInput'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { signIn } from '../../services/authService'
+import { getProfile, signIn, signOut } from '../../services/authService'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -16,7 +16,17 @@ export function LoginPage() {
     setError(null)
     setSubmitting(true)
     try {
-      await signIn({ email, password })
+      const { user } = await signIn({ email, password })
+      // Accounts that are not active yet (LGU staff awaiting approval) or were disabled cannot
+      // use the app. Say so here, on the login page, instead of letting the redirect hide it.
+      const profile = await getProfile(user.id).catch(() => null)
+      if (profile && profile.is_active === false) {
+        await signOut().catch(() => {})
+        setError(profile.role === 'lgu_staff'
+          ? 'Your LGU Staff account is waiting for Admin approval. You can log in once it is approved.'
+          : 'Your account has been disabled. Contact the Municipal Agriculture Office for assistance.')
+        return
+      }
       navigate('/')
     } catch (err) {
       setError(err.message)

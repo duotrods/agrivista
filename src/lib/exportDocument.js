@@ -66,39 +66,57 @@ export async function exportPdf(doc) {
 }
 
 export async function exportDocx(doc) {
-  const { AlignmentType, BorderStyle, Document, HeadingLevel, Packer, Paragraph, ShadingType, Table, TableCell, TableRow, TextRun, WidthType } = await import('docx')
+  const { AlignmentType, BorderStyle, Document, HeadingLevel, Packer, Paragraph, ShadingType, Table, TableCell, TableLayoutType, TableRow, TextRun, WidthType } = await import('docx')
   const border = { style: BorderStyle.SINGLE, size: 4, color: 'DDE4D9' }
   const borders = { top: border, bottom: border, left: border, right: border }
+  const PAGE_WIDTH = 9906 // A4 width (11906) minus 1000 margin on each side, in twentieths of a point
 
-  const cell = (value, { header = false, last = false } = {}) => new TableCell({
+  // Column widths follow the longest text in each column, so notes get room and numbers stay narrow.
+  // Tables with only two or three columns stay compact instead of stretching across the page.
+  const tableWidth = (section) => (section.head.length <= 3 ? 6800 : PAGE_WIDTH)
+  function columnWidths(section) {
+    const weights = section.head.map((heading, i) => Math.min(40, Math.max(11, heading.length + 4, ...section.rows.map((row) => text(row[i]).length))))
+    const total = weights.reduce((sum, w) => sum + w, 0)
+    return weights.map((w) => Math.round((tableWidth(section) * w) / total))
+  }
+
+  const cell = (value, width, { header = false } = {}) => new TableCell({
     borders,
+    width: { size: width, type: WidthType.DXA },
     margins: { top: 60, bottom: 60, left: 100, right: 100 },
     shading: header ? { type: ShadingType.CLEAR, color: 'auto', fill: '265C45' } : undefined,
     children: [new Paragraph({
-      alignment: last ? AlignmentType.LEFT : AlignmentType.LEFT,
-      children: [new TextRun({ text: text(value), bold: header, color: header ? 'FFFFFF' : '2D3B33', size: 19 })],
+      alignment: AlignmentType.LEFT,
+      children: [new TextRun({ text: text(value), bold: header, color: header ? 'FFFFFF' : '2D3B33', size: 19, font: 'Calibri' })],
     })],
   })
 
   const children = [
-    new Paragraph({ heading: HeadingLevel.TITLE, children: [new TextRun({ text: text(doc.title), bold: true, color: '1B3A2A' })] }),
+    new Paragraph({ heading: HeadingLevel.TITLE, children: [new TextRun({ text: text(doc.title), bold: true, color: '1B3A2A', font: 'Calibri' })] }),
   ]
-  if (doc.subtitle) children.push(new Paragraph({ spacing: { after: 240 }, children: [new TextRun({ text: text(doc.subtitle), color: '6F7D72', size: 20 })] }))
+  if (doc.subtitle) children.push(new Paragraph({ spacing: { after: 240 }, children: [new TextRun({ text: text(doc.subtitle), color: '6F7D72', size: 20, font: 'Calibri' })] }))
 
   for (const section of doc.sections) {
-    children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 280, after: 80 }, children: [new TextRun({ text: text(section.title), bold: true, color: '1B3A2A' })] }))
-    if (section.note) children.push(new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: text(section.note), color: '6F7D72', size: 18 })] }))
-    const rows = [new TableRow({ tableHeader: true, children: section.head.map((h) => cell(h, { header: true })) })]
-    if (section.rows.length === 0) rows.push(new TableRow({ children: [new TableCell({ borders, columnSpan: section.head.length, children: [new Paragraph({ children: [new TextRun({ text: 'No data.', color: '6F7D72', size: 19 })] })] })] }))
-    for (const row of section.rows) rows.push(new TableRow({ children: row.map((value) => cell(value)) }))
-    children.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows }))
+    const widths = columnWidths(section)
+    children.push(new Paragraph({ heading: HeadingLevel.HEADING_2, spacing: { before: 280, after: 80 }, children: [new TextRun({ text: text(section.title), bold: true, color: '1B3A2A', font: 'Calibri' })] }))
+    if (section.note) children.push(new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: text(section.note), color: '6F7D72', size: 18, font: 'Calibri' })] }))
+    const rows = [new TableRow({ tableHeader: true, children: section.head.map((h, i) => cell(h, widths[i], { header: true })) })]
+    if (section.rows.length === 0) rows.push(new TableRow({ children: [new TableCell({ borders, columnSpan: section.head.length, width: { size: tableWidth(section), type: WidthType.DXA }, children: [new Paragraph({ children: [new TextRun({ text: 'No data.', color: '6F7D72', size: 19, font: 'Calibri' })] })] })] }))
+    for (const row of section.rows) rows.push(new TableRow({ children: row.map((value, i) => cell(value, widths[i])) }))
+    children.push(new Table({
+      width: { size: tableWidth(section), type: WidthType.DXA },
+      layout: TableLayoutType.FIXED,
+      columnWidths: widths,
+      borders: { ...borders, insideHorizontal: border, insideVertical: border },
+      rows,
+    }))
   }
 
   const file = new Document({
     creator: 'AgriVista',
     title: text(doc.title),
     styles: { default: { document: { run: { font: 'Calibri', size: 21 } } } },
-    sections: [{ properties: { page: { margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 } } }, children }],
+    sections: [{ properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1000, bottom: 1000, left: 1000, right: 1000 } } }, children }],
   })
   save(await Packer.toBlob(file), `${doc.filename}.docx`)
 }

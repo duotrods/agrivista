@@ -8,7 +8,10 @@
     "build": "vite build",
     "lint": "oxlint",
     "test:db": "node --test supabase/tests/*.test.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test",
+    "test": "npm run test:db && npm run test:e2e",
+    "db:bundle": "node supabase/setup/build.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.114.0",
@@ -29,6 +32,7 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.8",
+    "@playwright/test": "^1.65.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",

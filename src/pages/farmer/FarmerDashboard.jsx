@@ -59,25 +59,24 @@ export function FarmerDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="rounded border p-4">
-          <h2 className="mb-2 text-lg font-medium">Upcoming harvest</h2>
-          {upcoming.length === 0 && <p className="text-sm text-gray-500">No upcoming harvest dates recorded.</p>}
-          <ul className="flex flex-col gap-1 text-sm">
+        <section className="dash-card">
+          <div className="dash-card-head"><h2>Upcoming harvest</h2><span>Next 5</span></div>
+          {upcoming.length === 0 && <p className="dash-empty">No upcoming harvest dates recorded.</p>}
+          <ul className="dash-list">
             {upcoming.slice(0, 5).map((f) => (
-              <li key={f.id} className="flex justify-between gap-2">
-                <Link to={`/fields/${f.id}`} className="text-green-700 hover:underline">{f.field_name}</Link>
-                <span className="text-gray-600">{new Date(f.expected_harvest).toLocaleDateString()}</span>
+              <li key={f.id} className="dash-row">
+                <Link to={`/fields/${f.id}`} className="dash-list-title">{f.field_name}</Link>
+                <span className="dash-list-meta">{new Date(f.expected_harvest).toLocaleDateString()}</span>
               </li>
             ))}
           </ul>
         </section>
-        <section className="rounded border p-4">
-          <h2 className="mb-2 text-lg font-medium">Notifications</h2>
-          {notifications.length === 0 && <p className="text-sm text-gray-500">No notifications yet.</p>}
-          <ul className="flex flex-col gap-1 text-sm">
-            {notifications.map((n) => <li key={n.id} className={n.is_read ? 'text-gray-500' : 'font-medium'}>{n.title}</li>)}
+        <section className="dash-card">
+          <div className="dash-card-head"><h2>Notifications</h2><Link to="/notifications" className="dash-link">View all</Link></div>
+          {notifications.length === 0 && <p className="dash-empty">No notifications yet.</p>}
+          <ul className="dash-list">
+            {notifications.map((n) => <li key={n.id} className={n.is_read ? 'dash-list-meta' : 'dash-list-title'}>{n.title}</li>)}
           </ul>
-          <Link to="/notifications" className="mt-2 inline-block text-sm text-green-700 hover:underline">View all</Link>
         </section>
       </div>
     </div>

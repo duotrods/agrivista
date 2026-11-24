@@ -746,3 +746,34 @@ html[data-theme=dark] .lp .dash-table th { color: #93a499; border-color: #2a372f
 html[data-theme=dark] .lp .dash-table td { color: #dce5df; border-color: #2a372f; }
 html[data-theme=dark] .lp .dash-table td.is-zero { color: #4f6156; }
 html[data-theme=dark] .lp .dash-table tbody tr:hover { background: #1d2822; }
+
+.row-btn.is-danger { color: #b42318; border-color: #f1c7c2; }
+.row-btn.is-danger:hover { background: #fdf1ef; }
+.row-btn:disabled { opacity: .5; cursor: not-allowed; }
+.dash-table .stat-pill { display: inline-block; }
+html[data-theme=dark] .row-btn.is-danger { color: #f0a59c; border-color: #6b2f29; }
+html[data-theme=dark] .row-btn.is-danger:hover { background: #3a1f1c; }
+/* The chip search box must beat the general input styling (which uses three :not() selectors). */
+html .tb-group input.tb-input:not([type=radio]):not([type=checkbox]):not([type=file]) { width: 230px; max-width: 100%; min-height: 32px; height: 32px; padding: 0 12px 0 6px; border: 0; border-radius: 0; background: transparent; box-shadow: none; font-size: .8125rem; font-weight: 500; color: inherit; outline: none; }
+
+/* Notice variants and list tweaks */
+.dash-note.is-success { background: #eaf6e2; border-color: #c9e4b8; color: #2f6b2a; }
+html[data-theme=dark] .dash-note.is-success { background: #1c3125; border-color: #2f5a3d; color: #8fd8ac; }
+.dash-list > li.is-unread { background: #eef6e6; box-shadow: inset 3px 0 0 #5bbf8a; }
+html[data-theme=dark] .dash-list > li.is-unread { background: #1c3125; }
+.dash-list > li.dash-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.toolbar-start[role=tablist] { margin-bottom: 16px; }
+
+/* Small screens: stat tags would collide with card titles, and the public menu replaces the link row. */
+@media (max-width: 640px) { .stat-head .stat-pill { display: none; } }
+.public-menu-btn { display: none; padding: 8px; border-radius: 8px; color: #3a563c; }
+.public-menu-btn:hover { background: #edf3e9; }
+@media (max-width: 1000px) {
+  .topbar:not(.topbar-app) { flex-wrap: wrap; }
+  .public-menu-btn { display: grid; place-items: center; }
+  .topbar:not(.topbar-app) > .nav-links { display: none; }
+  .topbar:not(.topbar-app) > .nav-links.is-open { display: flex; flex-direction: column; align-items: stretch; gap: 2px; order: 3; width: 100%; overflow: visible; padding-top: 6px; border-top: 1px solid #e8ece4; }
+  .topbar:not(.topbar-app) > .nav-links.is-open a { padding: 12px 14px; }
+  .topbar:not(.topbar-app) > .nav-links.is-open a.nav-cta { margin: 6px 0 4px; text-align: center; }
+}
+html[data-theme=dark] .public-menu-btn { color: #b3c1b8; }

@@ -14,12 +14,18 @@ export function Select({ children, value, onChange, className = '', required, di
   const search = useRef({ text: '', time: 0 })
   const id = useId()
 
-  function show() {
+  // Positions the menu under (or above) the button. Returns the button's rectangle.
+  function place() {
     const rect = trigger.current.getBoundingClientRect()
     const below = window.innerHeight - rect.bottom - 12
     const above = rect.top - 12
     const upward = below < 220 && above > below
     setPosition({ left: rect.left, width: rect.width, maxHeight: Math.min(280, upward ? above : below), ...(upward ? { bottom: window.innerHeight - rect.top + 6 } : { top: rect.bottom + 6 }) })
+    return rect
+  }
+
+  function show() {
+    place()
     setActive(selected >= 0 && !options[selected].disabled ? selected : options.findIndex((option) => !option.disabled))
     setOpen(true)
   }
@@ -40,7 +46,14 @@ export function Select({ children, value, onChange, className = '', required, di
     function close() { setOpen(false) }
     document.addEventListener('pointerdown', dismiss)
     window.addEventListener('resize', close)
-    function onScroll(event) { if (!menu.current?.contains(event.target)) close() }
+    // A nearby scroll (for example focus nudging a drawer) moves the button, so follow it.
+    // Close only once the button has scrolled out of view.
+    function onScroll(event) {
+      if (menu.current?.contains(event.target) || !trigger.current) return
+      const rect = trigger.current.getBoundingClientRect()
+      if (rect.bottom < 0 || rect.top > window.innerHeight) close()
+      else place()
+    }
     window.addEventListener('scroll', onScroll, true)
     return () => {
       document.removeEventListener('pointerdown', dismiss)

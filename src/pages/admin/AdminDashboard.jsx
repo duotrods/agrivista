@@ -1,6 +1,7 @@
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useEffect, useState } from 'react'
 import { ConfirmDialog } from '../../components/common/ConfirmDialog'
+import { StatCard } from '../../components/dashboard/StatCard'
 import { useAuth } from '../../hooks/useAuth'
 import { deleteUser, listLGUAccountsForApproval, logActivity, toggleProfileActive } from '../../services/adminService'
 
@@ -60,13 +61,11 @@ export function AdminDashboard() {
 
   const pending = accounts.filter((a) => !a.is_active)
   const approved = accounts.filter((a) => a.is_active)
+  const unverified = pending.filter((a) => !a.email_confirmed).length
 
   return (
     <div className="page-container">
-      <PageHeader
-        title="LGU staff approvals"
-        description="Review and approve LGU Staff registrations for AgriVista."
-      />
+      <PageHeader title="LGU staff approvals" description="Review and approve LGU Staff registrations for AgriVista." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
       {notice && <p role="status" className="dash-note">{notice}</p>}
       <ConfirmDialog
@@ -80,111 +79,71 @@ export function AdminDashboard() {
         onCancel={() => setRejecting(null)}
       />
 
-      <h2 className="mb-2 text-lg font-medium">
-        Pending approval {pending.length > 0 && `(${pending.length})`}
-      </h2>
-      <div className="mb-8 overflow-x-auto rounded border">
-        <table className="responsive-table w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">Name</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Purok</th>
-              <th className="p-2">Email Verified</th>
-              <th className="p-2">Registered</th>
-              <th className="p-2"></th>
-            </tr>
+      <div className="grid grid-cols-2 items-stretch gap-4 lg:grid-cols-3">
+        <StatCard icon="pending" tone="amber" label="Pending approval" description="Waiting for your decision." value={pending.length} loading={loading} pill={pending.length > 0 ? 'Needs review' : undefined} />
+        <StatCard icon="approved" label="Approved LGU staff" description="Can log in and review fields." value={approved.length} loading={loading} />
+        <StatCard icon="report" tone="red" label="Email not verified" description="Pending requests to double-check." value={unverified} loading={loading} />
+      </div>
+
+      <section className="dash-card mt-4">
+        <div className="dash-card-head">
+          <h2>Pending approval {pending.length > 0 && `(${pending.length})`}</h2>
+          <span>New LGU staff registrations</span>
+        </div>
+        <table className="dash-table is-text responsive-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Purok</th><th>Email verified</th><th>Registered</th><th className="cell-actions">Actions</th></tr>
           </thead>
           <tbody>
-            {loading && (
-              <tr>
-                <td className="p-2 text-gray-500" colSpan={6}>
-                  Loading...
-                </td>
-              </tr>
-            )}
-            {!loading && pending.length === 0 && (
-              <tr>
-                <td className="p-2 text-gray-500" colSpan={6}>
-                  No pending LGU registrations.
-                </td>
-              </tr>
-            )}
+            {loading && <tr><td colSpan={6} className="dash-table-empty">Loading...</td></tr>}
+            {!loading && pending.length === 0 && <tr><td colSpan={6} className="dash-table-empty">No pending LGU registrations.</td></tr>}
             {pending.map((a) => (
-              <tr key={a.id} className="border-t">
-                <td data-label="Name" className="p-2">{a.full_name}</td>
-                <td data-label="Email" className="p-2 break-all">{a.email}</td>
-                <td data-label="Purok" className="p-2">{a.purok ?? '—'}</td>
-                <td data-label="Email verified" className="p-2">
-                  {a.email_confirmed ? (
-                    <span className="text-green-700">✓ Verified</span>
-                  ) : (
-                    <span className="text-amber-700">✗ Not verified</span>
-                  )}
+              <tr key={a.id}>
+                <td data-label="Name">{a.full_name}</td>
+                <td data-label="Email" className="break-all">{a.email}</td>
+                <td data-label="Purok">{a.purok ?? '—'}</td>
+                <td data-label="Email verified">
+                  <span className={`stat-pill ${a.email_confirmed ? 'tone-green' : 'tone-amber'}`}>{a.email_confirmed ? '✓ Verified' : '✗ Not verified'}</span>
                 </td>
-                <td data-label="Registered" className="p-2">{new Date(a.created_at).toLocaleDateString()}</td>
-                <td data-label="Action" className="p-2">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleApprove(a.id)}
-                      className="rounded bg-green-700 px-2 py-1 text-xs text-white hover:bg-green-600"
-                    >
-                      Approve
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setRejecting(a)}
-                      className="rounded border border-red-600 px-2 py-1 text-xs text-red-700 hover:bg-red-50"
-                    >
-                      Reject
-                    </button>
+                <td data-label="Registered">{new Date(a.created_at).toLocaleDateString()}</td>
+                <td data-label="Actions" className="cell-actions">
+                  <div className="row-actions">
+                    <button type="button" onClick={() => handleApprove(a.id)} className="row-btn is-edit">Approve</button>
+                    <button type="button" onClick={() => setRejecting(a)} className="row-btn is-danger">Reject</button>
                   </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </section>
 
-      <h2 className="mb-2 text-lg font-medium">Approved LGU staff</h2>
-      <div className="overflow-x-auto rounded border">
-        <table className="responsive-table w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">Name</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Purok</th>
-              <th className="p-2"></th>
-            </tr>
+      <section className="dash-card mt-4">
+        <div className="dash-card-head">
+          <h2>Approved LGU staff</h2>
+          <span>{approved.length} {approved.length === 1 ? 'account' : 'accounts'}</span>
+        </div>
+        <table className="dash-table is-text responsive-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Purok</th><th className="cell-actions">Actions</th></tr>
           </thead>
           <tbody>
-            {approved.length === 0 && (
-              <tr>
-                <td className="p-2 text-gray-500" colSpan={4}>
-                  No approved LGU staff yet.
-                </td>
-              </tr>
-            )}
+            {approved.length === 0 && <tr><td colSpan={4} className="dash-table-empty">No approved LGU staff yet.</td></tr>}
             {approved.map((a) => (
-              <tr key={a.id} className="border-t">
-                <td data-label="Name" className="p-2">{a.full_name}</td>
-                <td data-label="Email" className="p-2 break-all">{a.email}</td>
-                <td data-label="Purok" className="p-2">{a.purok ?? '—'}</td>
-                <td data-label="Action" className="p-2">
-                  <button
-                    type="button"
-                    onClick={() => handleRevoke(a.id)}
-                    className="rounded border px-2 py-1 text-xs hover:bg-gray-50"
-                  >
-                    Revoke
-                  </button>
+              <tr key={a.id}>
+                <td data-label="Name">{a.full_name}</td>
+                <td data-label="Email" className="break-all">{a.email}</td>
+                <td data-label="Purok">{a.purok ?? '—'}</td>
+                <td data-label="Actions" className="cell-actions">
+                  <div className="row-actions">
+                    <button type="button" onClick={() => handleRevoke(a.id)} className="row-btn">Revoke</button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </section>
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import { useAuth } from '../../hooks/useAuth'
@@ -6,6 +7,7 @@ import { ProfileMenu } from './ProfileMenu'
 
 export function Navbar({ onMenuClick }) {
   const { user } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
   if (user) {
     return (
       <nav className="topbar topbar-app print:hidden" aria-label="Main navigation">
@@ -20,7 +22,10 @@ export function Navbar({ onMenuClick }) {
   return (
     <nav className="topbar print:hidden" aria-label="Main navigation">
       <Link to="/" className="brand"><img src={logo} alt="" /><span>AgriVista<span className="brand-caption">GROWING TOGETHER</span></span></Link>
-      <div className="nav-links"><NavLink to="/" end>Home</NavLink><NavLink to="/map">Rice field map</NavLink><NavLink to="/statistics">Statistics</NavLink><NavLink to="/crop-status">Crop status</NavLink><NavLink to="/about">About</NavLink><NavLink to="/login">Log in</NavLink><Link to="/register" className="nav-cta">Get started</Link></div>
+      <button type="button" className="public-menu-btn" onClick={() => setMenuOpen((o) => !o)} aria-expanded={menuOpen} aria-label="Open menu">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d={menuOpen ? 'M6 6l12 12M18 6 6 18' : 'M4 6h16M4 12h16M4 18h16'} /></svg>
+      </button>
+      <div className={`nav-links${menuOpen ? ' is-open' : ''}`} onClick={() => setMenuOpen(false)}><NavLink to="/" end>Home</NavLink><NavLink to="/map">Rice field map</NavLink><NavLink to="/statistics">Statistics</NavLink><NavLink to="/crop-status">Crop status</NavLink><NavLink to="/about">About</NavLink><NavLink to="/login">Log in</NavLink><Link to="/register" className="nav-cta">Get started</Link></div>
     </nav>
   )
 }

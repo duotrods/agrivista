@@ -56,6 +56,7 @@ export function MediaGallery({ media }) {
         </ViewerModal>
       )}
 
+      {media.length === 0 && <p className="text-sm text-gray-500">No photos or videos yet.</p>}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {media.map((item) => (
           <div key={item.id} className="flex flex-col gap-1">

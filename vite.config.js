@@ -5,6 +5,9 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Prepare the lazily loaded chart and export libraries up front, so the dev server
+  // does not reload the page the first time one of them is opened.
+  optimizeDeps: { include: ['jspdf', 'jspdf-autotable', 'docx', 'apexcharts', 'react-apexcharts'] },
   plugins: [
     react(),
     tailwindcss(),

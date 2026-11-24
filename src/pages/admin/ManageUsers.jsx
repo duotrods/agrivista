@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
+import { ConfirmDialog } from '../../components/common/ConfirmDialog'
 import { Select } from '../../components/common/Select'
+import { StatCard } from '../../components/dashboard/StatCard'
+import { ToolbarIcon } from '../../components/dashboard/ToolbarIcon'
 import { PageHeader } from '../../components/layout/PageHeader'
 import { useAuth } from '../../hooks/useAuth'
 import { deleteUser, listAllUsers, toggleProfileActive } from '../../services/adminService'
@@ -13,7 +16,7 @@ export function ManageUsers() {
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('')
-  const [confirmingId, setConfirmingId] = useState(null)
+  const [deleting, setDeleting] = useState(null)
   const [busyId, setBusyId] = useState(null)
 
   useEffect(() => {
@@ -42,13 +45,14 @@ export function ManageUsers() {
     }
   }
 
-  async function handleDelete(target) {
+  async function handleDelete() {
+    const target = deleting
     setBusyId(target.id)
     setError(null)
     try {
       await deleteUser(target.id, { deletedBy: user.id, email: target.email, role: target.role })
       setUsers((prev) => prev.filter((u) => u.id !== target.id))
-      setConfirmingId(null)
+      setDeleting(null)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -56,58 +60,70 @@ export function ManageUsers() {
     }
   }
 
+  const count = (r) => users.filter((u) => u.role === r).length
+  const inactive = users.filter((u) => !u.is_active).length
+
   return (
     <div className="page-container">
       <PageHeader title="Users" description="Manage every account: farmers, LGU staff and admins." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <input type="search" aria-label="Search users" placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="rounded border px-3 py-2 text-sm" />
-        <Select aria-label="Filter by role" value={role} onChange={(e) => setRole(e.target.value)} className="rounded border px-3 py-2 text-sm">
-          <option value="">All roles</option>
-          {Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-        </Select>
-        <span className="text-sm text-gray-600">{loading ? 'Loading...' : `${visible.length} of ${users.length}`}</span>
+      <ConfirmDialog
+        open={Boolean(deleting)}
+        danger
+        busy={Boolean(deleting) && busyId === deleting.id}
+        title="Delete this account?"
+        message={deleting ? `Permanently delete ${deleting.full_name}?${deleting.role === 'farmer' ? ' Their fields, reports and notifications are deleted too.' : ''} This cannot be undone.` : ''}
+        confirmLabel="Yes, delete"
+        onConfirm={handleDelete}
+        onCancel={() => setDeleting(null)}
+      />
+
+      <div className="grid grid-cols-2 items-stretch gap-4 lg:grid-cols-4">
+        <StatCard icon="users" tone="blue" label="Total accounts" description="Every registered user." value={users.length} loading={loading} />
+        <StatCard icon="sprout" label="Farmers" description="Registered farmers." value={count('farmer')} loading={loading} />
+        <StatCard icon="approved" label="LGU staff" description="Staff and admins." value={count('lgu_staff') + count('admin')} loading={loading} />
+        <StatCard icon="pending" tone="amber" label="Disabled or pending" description="Cannot log in right now." value={inactive} loading={loading} />
       </div>
-      <div className="overflow-x-auto rounded border">
-        <table className="responsive-table w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">Name</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Role</th>
-              <th className="p-2">Purok</th>
-              <th className="p-2">Status</th>
-              <th className="p-2">Registered</th>
-              <th className="p-2"></th>
-            </tr>
+
+      <section className="dash-card mt-4">
+        <div className="dash-card-head">
+          <h2>All accounts</h2>
+          <span>{loading ? 'Loading...' : `${visible.length} of ${users.length}`}</span>
+        </div>
+        <div className="toolbar toolbar-start">
+          <div className="tb-group">
+            <span className="tb-icon"><ToolbarIcon name="search" /></span>
+            <input type="search" aria-label="Search users" placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} className="tb-input" />
+          </div>
+          <div className="tb-group">
+            <Select aria-label="Filter by role" value={role} onChange={(e) => setRole(e.target.value)} className="tb-select">
+              <option value="">All roles</option>
+              {Object.entries(ROLE_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </Select>
+          </div>
+          {(search || role) && <button type="button" onClick={() => { setSearch(''); setRole('') }} className="tb-btn">Clear</button>}
+        </div>
+        <table className="dash-table is-text responsive-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Role</th><th>Purok</th><th>Status</th><th>Registered</th><th className="cell-actions">Actions</th></tr>
           </thead>
           <tbody>
-            {!loading && visible.length === 0 && <tr><td colSpan={7} className="p-3 text-gray-500">No users match.</td></tr>}
+            {!loading && visible.length === 0 && <tr><td colSpan={7} className="dash-table-empty">No users match.</td></tr>}
             {visible.map((u) => {
               const isSelf = u.id === user.id
               return (
-                <tr key={u.id} className="border-t align-top">
-                  <td data-label="Name" className="p-2">{u.full_name}{isSelf && <span className="ml-1 text-xs text-gray-500">(you)</span>}</td>
-                  <td data-label="Email" className="p-2 break-all">{u.email}{!u.email_confirmed && <span className="ml-1 text-xs text-amber-700">unverified</span>}</td>
-                  <td data-label="Role" className="p-2">{ROLE_LABELS[u.role] ?? u.role}</td>
-                  <td data-label="Purok" className="p-2">{u.purok ?? '—'}</td>
-                  <td data-label="Status" className="p-2">{u.is_active ? <span className="text-green-700">Active</span> : <span className="text-red-600">{u.role === 'lgu_staff' ? 'Pending / disabled' : 'Disabled'}</span>}</td>
-                  <td data-label="Registered" className="p-2">{new Date(u.created_at).toLocaleDateString()}</td>
-                  <td data-label="Action" className="p-2">
-                    {isSelf ? null : confirmingId === u.id ? (
-                      <div className="flex max-w-xs flex-col gap-2">
-                        <p className="text-xs text-red-700">
-                          Permanently delete {u.full_name}?{u.role === 'farmer' && ' Their fields, reports and notifications are deleted too.'} This cannot be undone.
-                        </p>
-                        <div className="flex gap-2">
-                          <button type="button" onClick={() => handleDelete(u)} disabled={busyId === u.id} className="rounded bg-red-600 px-2 py-1 text-xs text-white hover:bg-red-700 disabled:opacity-50">{busyId === u.id ? 'Deleting...' : 'Yes, delete'}</button>
-                          <button type="button" onClick={() => setConfirmingId(null)} className="rounded border px-2 py-1 text-xs hover:bg-gray-50">Cancel</button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex gap-2">
-                        <button type="button" onClick={() => handleToggle(u)} disabled={busyId === u.id} className="rounded border px-2 py-1 text-xs hover:bg-gray-50 disabled:opacity-50">{u.is_active ? 'Disable' : 'Enable'}</button>
-                        <button type="button" onClick={() => setConfirmingId(u.id)} className="rounded border border-red-600 px-2 py-1 text-xs text-red-700 hover:bg-red-50">Delete</button>
+                <tr key={u.id}>
+                  <td data-label="Name">{u.full_name}{isSelf && <span className="form-hint"> (you)</span>}</td>
+                  <td data-label="Email" className="break-all">{u.email}{!u.email_confirmed && <span className="stat-pill tone-amber ml-1">unverified</span>}</td>
+                  <td data-label="Role"><span className={`stat-pill ${u.role === 'admin' ? 'tone-blue' : u.role === 'lgu_staff' ? 'tone-amber' : 'tone-green'}`}>{ROLE_LABELS[u.role] ?? u.role}</span></td>
+                  <td data-label="Purok">{u.purok ?? '—'}</td>
+                  <td data-label="Status"><span className={`stat-pill ${u.is_active ? 'tone-green' : 'tone-red'}`}>{u.is_active ? 'Active' : u.role === 'lgu_staff' ? 'Pending / disabled' : 'Disabled'}</span></td>
+                  <td data-label="Registered">{new Date(u.created_at).toLocaleDateString()}</td>
+                  <td data-label="Actions" className="cell-actions">
+                    {!isSelf && (
+                      <div className="row-actions">
+                        <button type="button" onClick={() => handleToggle(u)} disabled={busyId === u.id} className="row-btn">{u.is_active ? 'Disable' : 'Enable'}</button>
+                        <button type="button" onClick={() => setDeleting(u)} className="row-btn is-danger">Delete</button>
                       </div>
                     )}
                   </td>
@@ -116,7 +132,7 @@ export function ManageUsers() {
             })}
           </tbody>
         </table>
-      </div>
+      </section>
     </div>
   )
 }

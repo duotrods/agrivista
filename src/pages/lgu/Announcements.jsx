@@ -47,7 +47,8 @@ export function Announcements() {
     <div className="page-container">
       <PageHeader title="Announcements" description="Broadcast a notification to farmers in your community." />
 
-      <form onSubmit={handleSubmit} className="mb-6 flex flex-col gap-2 rounded border p-4">
+      <form onSubmit={handleSubmit} className="dash-card mb-4 flex flex-col gap-3">
+        <div className="dash-card-head"><h2>New announcement</h2><span>Sent as a notification to farmers</span></div>
         <input
           type="text"
           placeholder="Title"
@@ -79,7 +80,7 @@ export function Announcements() {
         <button
           type="submit"
           disabled={sending}
-          className="w-fit rounded bg-green-700 px-3 py-2 text-sm text-white hover:bg-green-600 disabled:opacity-50"
+          className="btn-primary w-fit disabled:opacity-50"
         >
           {sending ? 'Sending...' : 'Send Announcement'}
         </button>
@@ -87,18 +88,19 @@ export function Announcements() {
         {error && <p className="text-sm text-red-600">{error}</p>}
       </form>
 
-      <ul className="flex flex-col gap-2">
-        {announcements.length === 0 && <li className="text-sm text-gray-500">No announcements sent yet.</li>}
-        {announcements.map((a) => (
-          <li key={a.id} className="rounded border p-3 text-sm">
-            <p className="font-medium">{a.title}</p>
-            <p className="text-gray-700">{a.message}</p>
-            <p className="mt-1 text-xs text-gray-500">
-              {a.target_purok ?? 'All puroks'} · {new Date(a.created_at).toLocaleString()}
-            </p>
-          </li>
-        ))}
-      </ul>
+      <section className="dash-card">
+        <div className="dash-card-head"><h2>Sent announcements</h2><span>{announcements.length} sent</span></div>
+        {announcements.length === 0 && <p className="dash-empty">No announcements sent yet.</p>}
+        <ul className="dash-list">
+          {announcements.map((a) => (
+            <li key={a.id}>
+              <p className="dash-list-title">{a.title}</p>
+              <p className="mt-1 text-sm text-gray-700">{a.message}</p>
+              <p className="dash-list-meta mt-1">{a.target_purok ?? 'All puroks'} · {new Date(a.created_at).toLocaleString()}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   )
 }

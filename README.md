@@ -39,9 +39,9 @@ A Progressive Web App for rice field identification and monitoring in Banaybanay
    VITE_SUPABASE_ANON_KEY=
    ```
 
-4. **Run the database migrations** — in the Supabase SQL Editor, run every file in `supabase/migrations/` **in numeric order**, from `0001_phase0_schema.sql` through the highest-numbered file. Each one is idempotent (safe to re-run).
+4. **Set up the database** — in the Supabase SQL Editor, run the single script [`supabase/setup/full-setup.sql`](supabase/setup/full-setup.sql) once on the new project, then run [`supabase/setup/verify.sql`](supabase/setup/verify.sql): every row must say `OK`. Full steps, including moving to a new project, are in [`supabase/SETUP.md`](supabase/SETUP.md). (The individual files in `supabase/migrations/` are the source; `npm run db:bundle` rebuilds the single script.)
 
-5. **Create the storage bucket** — in Supabase Storage, create a bucket named `media` and mark it **Public**. (Migration `0002_storage.sql` also creates it via SQL, but doing it in the UI is more reliable — see that file's policies either way.)
+5. **Check the storage bucket** — the script creates a public bucket named `media`. Confirm it exists in Supabase Storage.
 
 6. **Start the dev server**
    ```
@@ -75,5 +75,7 @@ src/
   lib/          # Supabase client, constants, helpers
   services/     # All Supabase queries, grouped by domain
 supabase/
-  migrations/   # SQL migrations, run in order
+  migrations/   # SQL migrations (source of truth)
+  setup/        # full-setup.sql (one script for a new project) and verify.sql
+  tests/        # database tests (npm run test:db)
 ```

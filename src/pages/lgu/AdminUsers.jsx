@@ -29,63 +29,40 @@ export function AdminUsers() {
     <div className="page-container">
       <PageHeader title="Farmers" description="Registered farmers, their rice fields, and account access." />
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-      <div className="overflow-x-auto rounded border">
-        <table className="responsive-table w-full text-left text-sm">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="p-2">Name</th>
-              <th className="p-2">Email</th>
-              <th className="p-2">Purok</th>
-              <th className="p-2">Fields</th>
-              <th className="p-2">Status</th>
-              <th className="p-2"></th>
-            </tr>
+      <section className="dash-card">
+        <div className="dash-card-head"><h2>Registered farmers</h2><span>{profiles.length} {profiles.length === 1 ? 'farmer' : 'farmers'}</span></div>
+        <table className="dash-table is-text responsive-table">
+          <thead>
+            <tr><th>Name</th><th>Email</th><th>Purok</th><th>Fields</th><th>Status</th><th className="cell-actions">Actions</th></tr>
           </thead>
           <tbody>
             {profiles.map((p) => {
               const own = fields.filter((f) => f.farmer_id === p.id)
               return (
                 <Fragment key={p.id}>
-                  <tr className="border-t">
-                    <td data-label="Name" className="p-2">{p.full_name}</td>
-                    <td data-label="Email" className="p-2 break-all">{p.email}</td>
-                    <td data-label="Purok" className="p-2">{p.purok ?? '—'}</td>
-                    <td data-label="Fields" className="p-2">
-                      <button
-                        type="button"
-                        aria-expanded={expanded === p.id}
-                        onClick={() => setExpanded(expanded === p.id ? null : p.id)}
-                        className="text-green-700 hover:underline"
-                      >
+                  <tr>
+                    <td data-label="Name">{p.full_name}</td>
+                    <td data-label="Email" className="break-all">{p.email}</td>
+                    <td data-label="Purok">{p.purok ?? '—'}</td>
+                    <td data-label="Fields">
+                      <button type="button" aria-expanded={expanded === p.id} onClick={() => setExpanded(expanded === p.id ? null : p.id)} className="dash-link">
                         {own.length} {own.length === 1 ? 'field' : 'fields'}
                       </button>
                     </td>
-                    <td data-label="Status" className="p-2">
-                      {p.is_active ? (
-                        <span className="text-green-700">Active</span>
-                      ) : (
-                        <span className="text-red-600">Disabled</span>
-                      )}
-                    </td>
-                    <td data-label="Action" className="p-2">
-                      <button
-                        type="button"
-                        onClick={() => handleToggle(p)}
-                        className="rounded border px-2 py-1 text-xs hover:bg-gray-50"
-                      >
-                        {p.is_active ? 'Disable' : 'Enable'}
-                      </button>
+                    <td data-label="Status"><span className={`stat-pill ${p.is_active ? 'tone-green' : 'tone-red'}`}>{p.is_active ? 'Active' : 'Disabled'}</span></td>
+                    <td data-label="Actions" className="cell-actions">
+                      <div className="row-actions"><button type="button" onClick={() => handleToggle(p)} className="row-btn">{p.is_active ? 'Disable' : 'Enable'}</button></div>
                     </td>
                   </tr>
                   {expanded === p.id && (
-                    <tr className="bg-gray-50">
-                      <td colSpan={6} className="p-3">
-                        {own.length === 0 && <p className="text-gray-500">No registered fields.</p>}
-                        <ul className="flex flex-col gap-1">
+                    <tr>
+                      <td colSpan={6}>
+                        {own.length === 0 && <p className="dash-list-meta">No registered fields.</p>}
+                        <ul className="dash-list">
                           {own.map((f) => (
                             <li key={f.id}>
-                              <Link to={`/lgu/fields/${f.id}`} className="text-green-700 hover:underline">{f.field_name}</Link>
-                              <span className="text-xs text-gray-500">
+                              <Link to={`/lgu/fields/${f.id}`} className="dash-list-title">{f.field_name}</Link>
+                              <span className="dash-list-meta">
                                 {' '}· {f.purok ?? '—'} · {FIELD_STATUS_LABELS[f.field_status] ?? f.field_status}
                                 {f.area_hectares != null && ` · ${f.area_hectares} ha`} ·{' '}
                                 {f.is_verified ? 'Approved' : f.review_status === 'rejected' ? 'Rejected' : f.review_status === 'needs_correction' ? 'Needs correction' : 'Pending'}
@@ -101,7 +78,7 @@ export function AdminUsers() {
             })}
           </tbody>
         </table>
-      </div>
+      </section>
     </div>
   )
 }
